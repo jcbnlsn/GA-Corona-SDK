@@ -1,4 +1,3 @@
-
 ---------------------------------------------------------------------------------
 -- Game Analytics for Corona SDK: Template
 ---------------------------------------------------------------------------------
@@ -20,29 +19,30 @@ GA.waitForCustomUserID       = false
 GA.newSessionOnResume        = false
 
 GA.archiveEvents             = true
-GA.archiveEventsLimit        = 512 				-- kilobytes 
+GA.archiveEventsLimit        = 512      -- kilobytes 
 
 GA.batchRequests             = false
-GA.batchRequestsInterval     = 30				-- seconds (minimum 1 second)
+GA.batchRequestsInterval     = 30       -- seconds (minimum 1 second)
 
 -- Built in quality events
 GA.submitSystemInfo          = true
 GA.submitUnhandledErrors     = false
 GA.submitStackTraces         = false
-GA.submitMemoryWarnings      = false 			-- iOS only!
-GA.maxErrorCount             = 20   			-- errors per session
+GA.submitMemoryWarnings      = false    -- iOS only!
+GA.maxErrorCount             = 20       -- errors per session
 
 -- Built in design events
 GA.useStoryboard             = false
 GA.submitStoryboardEvents    = false
 
 GA.submitAverageFps          = false
-GA.submitAverageFpsInterval  = 30 				-- seconds (minimum 5)
+GA.submitAverageFpsInterval  = 30       -- seconds (minimum 5)
 
 GA.submitCriticalFps         = false
-GA.submitCriticalFpsInterval = 5 				-- seconds (minimum 5)
-GA.criticalFpsRange          = 15				-- frames  (minimum 10)
-GA.criticalFpsBelow          = display.fps/2 	-- ( half the fps you set in the config.lua file)
+GA.submitCriticalFpsInterval = 5        -- seconds (minimum 5)
+GA.criticalFpsRange          = 15       -- frames  (minimum 10)
+
+GA.criticalFpsBelow          = display.fps/2 -- half the fps value you set in the config.lua file
 
 ---------------------------------------------------------------------------------
 -- Initialize Game Analytics.
@@ -56,13 +56,13 @@ GA.init ({
 ---------------------------------------------------------------------------------
 -- Game Analytics setters/getters ( Only call these after initialization )
 ---------------------------------------------------------------------------------
---GA.setCustomUserID ( "custom_user_id" ) 	-- In case you want to use your own user id. For example if the app has it's own email sign-in.
-											-- Remember to set GA.waitForCustomUserID to true if you want to use this!
+--GA.setCustomUserID ( "custom_user_id" )  -- In case you want to use your own user id. For example if the app has it's own email sign-in.
+                                           -- Remember to set GA.waitForCustomUserID to true if you want to use this!
 
---GA.setAcquisition ( id, value ) 			-- For aquisition reporting. Valid id's are "publisher", "site", "campaign", "adgroup", "ad", "keyword".
-											-- The value parameter should be a string.
+--GA.setAcquisition ( id, value )          -- For aquisition reporting. Valid id's are "publisher", "site", "campaign", "adgroup", "ad", "keyword".
+                                           -- The value parameter should be a string.
 
---GA.getUserID () 							-- returns the UID GA uses.
+--GA.getUserID ()                          -- returns the UID GA uses.
 
 
 
