@@ -20,11 +20,11 @@ GameAnalytics.isDebug                   = true
 GameAnalytics.runInSimulator            = true
 GameAnalytics.submitWhileRoaming        = false
 GameAnalytics.archiveEvents             = true
-GameAnalytics.archiveEventsLimit        = 512 	-- kilobytes 
+GameAnalytics.archiveEventsLimit        = 512   -- kilobytes 
 GameAnalytics.waitForCustomUserID       = false
 GameAnalytics.newSessionOnResume        = false
 GameAnalytics.batchRequests             = false
-GameAnalytics.batchRequestsInterval     = 30	-- seconds (minimum 1 second)
+GameAnalytics.batchRequestsInterval     = 30    -- seconds (minimum 1 second)
 
 -- Quality
 
@@ -32,20 +32,20 @@ GameAnalytics.submitSystemInfo          = false
 GameAnalytics.submitUnhandledErrors     = false
 GameAnalytics.submitStackTraces         = false
 GameAnalytics.submitMemoryWarnings      = false -- iOS only!
-GameAnalytics.maxErrorCount				= 20    -- errors per session
+GameAnalytics.maxErrorCount             = 20    -- errors per session
 
 -- Design
-GameAnalytics.useStoryboard				= false
+GameAnalytics.useStoryboard             = false
 GameAnalytics.submitStoryboardEvents    = false
 
-GameAnalytics.submitAverageFps			= false
-GameAnalytics.submitAverageFpsInterval	= 30 	-- seconds (minimum 5)
+GameAnalytics.submitAverageFps          = false
+GameAnalytics.submitAverageFpsInterval  = 30    -- seconds (minimum 5)
 
 GameAnalytics.submitCriticalFps         = false
-GameAnalytics.submitCriticalFpsInterval = 5 	-- seconds (minimum 5)
-GameAnalytics.criticalFpsRange			= 15	-- frames  (minimum 10)
+GameAnalytics.submitCriticalFpsInterval = 5     -- seconds (minimum 5)
+GameAnalytics.criticalFpsRange          = 15    -- frames  (minimum 10)
 
-GameAnalytics.criticalFpsBelow 			= display.fps/2
+GameAnalytics.criticalFpsBelow          = display.fps/2
 
 -----------------------------------------------
 
