@@ -40,11 +40,11 @@ GameAnalytics.submitStoryboardEvents    = false
 GameAnalytics.submitAverageFps		= false
 GameAnalytics.submitAverageFpsInterval	= 30 	-- seconds (minimum 5)
 
-GameAnalytics.submitCriticalFps         = false
-GameAnalytics.submitCriticalFpsInterval = 5 	-- seconds (minimum 5)
+GameAnalytics.submitCriticalFps		= false
+GameAnalytics.submitCriticalFpsInterval	= 5 	-- seconds (minimum 5)
 GameAnalytics.criticalFpsRange		= 15	-- frames  (minimum 10)
 
-GameAnalytics.criticalFpsBelow 		= display.fps/2
+GameAnalytics.criticalFpsBelow		= display.fps/2
 
 -----------------------------------------------
 
