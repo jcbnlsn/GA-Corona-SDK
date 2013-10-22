@@ -34,11 +34,11 @@ GameAnalytics.submitMemoryWarnings      = false -- iOS only!
 GameAnalytics.maxErrorCount		= 20    -- errors per session
 
 -- Design
-GameAnalytics.useStoryboard		= false
+GameAnalytics.useStoryboard             = false
 GameAnalytics.submitStoryboardEvents    = false
 
 GameAnalytics.submitAverageFps          = false
-GameAnalytics.submitAverageFpsInterval	= 30    -- seconds (minimum 5)
+GameAnalytics.submitAverageFpsInterval  = 30    -- seconds (minimum 5)
 
 GameAnalytics.submitCriticalFps         = false
 GameAnalytics.submitCriticalFpsInterval = 5     -- seconds (minimum 5)
