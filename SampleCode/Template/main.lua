@@ -59,9 +59,6 @@ GA.init ({
 --GA.setCustomUserID ( "custom_user_id" )  -- In case you want to use your own user id. For example if the app has it's own email sign-in.
                                            -- Remember to set GA.waitForCustomUserID to true if you want to use this!
 
---GA.setAcquisition ( id, value )          -- For aquisition reporting. Valid id's are "publisher", "site", "campaign", "adgroup", "ad", "keyword".
-                                           -- The value parameter should be a string.
-
 --GA.getUserID ()                          -- returns the UID GA uses.
 
 
