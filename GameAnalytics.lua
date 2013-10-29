@@ -31,7 +31,7 @@ GameAnalytics.submitSystemInfo          = false
 GameAnalytics.submitUnhandledErrors     = false
 GameAnalytics.submitStackTraces         = false
 GameAnalytics.submitMemoryWarnings      = false -- iOS only!
-GameAnalytics.maxErrorCount		= 20    -- errors per session
+GameAnalytics.maxErrorCount             = 20    -- errors per session
 
 -- Design
 GameAnalytics.useStoryboard             = false
