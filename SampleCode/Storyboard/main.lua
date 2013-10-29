@@ -1,4 +1,3 @@
-
 ---------------------------------------------------------------------------------
 -- Game Analytics for Corona SDK: Storyboard example 
 ---------------------------------------------------------------------------------
@@ -20,9 +19,6 @@ storyboard.gotoScene( "scene1", "fade", 300 )
 
 GA.useStoryboard          = true -- hook storyboard and fill in area parameter in GA events.
 GA.submitStoryboardEvents = true -- submit scene changes and time spent on scenes.
-
-GA.batchRequests             = true
-GA.batchRequestsInterval     = 10	-- seconds (minimum 1 second)
 
 GA.init ({
 	game_key   = 'paste_your_game_key_here',
