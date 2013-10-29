@@ -43,8 +43,9 @@ GA.newEvent ( "quality",
 	{ event_id = "performance:TextureMemoryUsed", message = textureMemUsage }
 )
 
--- Custom user event
+-- Custom user events
 GA.newEvent ( "user", { gender = "F", birth_year = "1990", friend_count = 3 } )
+GA.newEvent ( "user", { install_site="Facebook", install_launch="adgroup" })
 
 -- Design example: submit x, y positions when touching the screen
 local function touchHandler ( event )
@@ -53,4 +54,5 @@ local function touchHandler ( event )
 	end
 end
 Runtime:addEventListener ( "touch", touchHandler )
+
 
