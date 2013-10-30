@@ -20,18 +20,18 @@ GameAnalytics.isDebug                   = true
 GameAnalytics.runInSimulator            = true
 GameAnalytics.submitWhileRoaming        = false
 GameAnalytics.archiveEvents             = true
-GameAnalytics.archiveEventsLimit        = 512 	-- kilobytes 
+GameAnalytics.archiveEventsLimit        = 512   -- kilobytes 
 GameAnalytics.waitForCustomUserID       = false
 GameAnalytics.newSessionOnResume        = false
 GameAnalytics.batchRequests             = false
-GameAnalytics.batchRequestsInterval     = 30	-- seconds (minimum 1 second)
+GameAnalytics.batchRequestsInterval     = 30    -- seconds (minimum 1 second)
 
 -- Quality
 GameAnalytics.submitSystemInfo          = false
 GameAnalytics.submitUnhandledErrors     = false
 GameAnalytics.submitStackTraces         = false
 GameAnalytics.submitMemoryWarnings      = false -- iOS only!
-GameAnalytics.maxErrorCount		= 20    -- errors per session
+GameAnalytics.maxErrorCount             = 20    -- errors per session
 
 -- Design
 GameAnalytics.useStoryboard             = false
@@ -56,7 +56,7 @@ local apiVersion = 1
 
 local gameKey, secretKey, userId, build, sessionId, endpointUrl
 
-local customUserID, userData
+local customUserID
 local newEvent, submitEvents
 
 local categories = { design=true, quality=true, user=true, business=true }
@@ -188,7 +188,7 @@ end
 ----------------------------------------
 local function submitUserEvent ( initial )
 
-	local userEvent = userData or 
+	local userEvent = 
 	{
 		platform=platformName,
 		os_minor=system.getInfo("platformVersion"),
@@ -199,8 +199,6 @@ local function submitUserEvent ( initial )
 	
 	if platformName == "iPhone OS" then userEvent["ios_id"]=system.getInfo( "iosAdvertisingIdentifier" )
 	elseif platformName == "Android" then userEvent["android_id"]=system.getInfo("deviceID") end
-
-	userData = userEvent
 
 	if initial then
 		if not isSimulator then newEvent ( "user", userEvent ) end
@@ -238,16 +236,16 @@ local function createUserID ()
 
 	local data = loadData( system.pathForFile( "GameAnalyticsID.txt", system.DocumentsDirectory ) ) 
 	if not data.userID then 
-        local time = os.time ()
-        local name, deviceInfo = system.getInfo ("name" ), system.getInfo ( "architectureInfo" )
-        local chars = {"0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"}
-        local randomHexTable = {} math.randomseed( time )
-        for i=1,16 do randomHexTable[i]=chars[rand(1,16)] end
-        local randomHex = table.concat ( randomHexTable )
-        local id = time..name..deviceInfo..randomHex
-        id = id:gsub("%s+", "")
-        data.userID = crypto.digest( crypto.md5, id )
-        saveData ( data, system.pathForFile( "GameAnalyticsID.txt", system.DocumentsDirectory ) )
+		local time = os.time ()
+		local name, deviceInfo = system.getInfo ("name" ), system.getInfo ( "architectureInfo" )
+		local chars = {"0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"}
+		local randomHexTable = {} math.randomseed( time )
+		for i=1,16 do randomHexTable[i]=chars[rand(1,16)] end
+		local randomHex = table.concat ( randomHexTable )
+		local id = time..name..deviceInfo..randomHex
+		id = id:gsub("%s+", "")
+		data.userID = crypto.digest( crypto.md5, id )
+		saveData ( data, system.pathForFile( "GameAnalyticsID.txt", system.DocumentsDirectory ) )
 	end
 	return data.userID
 end
@@ -777,26 +775,6 @@ function GameAnalytics.getUserID ()
 		error ( "GA: Warning! You have to initialize Game Analytics before you can call getUserID()", 2 )
 	end
 	return userId or customUserID
-end
-
-----------------------------------------
--- Public: Set acquisition properties
----------------------------------------- 
-function GameAnalytics.setAcquisition ( id, value )
-
-	if not disabled then
-		if initialized then
-			local properties = { "publisher", "site", "campaign", "adgroup", "ad", "keyword" }
-			if not table.indexOf ( properties, id ) then
-				error ( "GA: The acquisition id you are trying to set is not valid.", 2 )
-			else
-				userData["install_"..id] = value
-				submitUserEvent ()
-			end
-		else
-			error ( "GA: You have to initialize Game Analytics before you can set acquisition properties.", 2 )
-		end
-	end
 end
 
 return GameAnalytics
