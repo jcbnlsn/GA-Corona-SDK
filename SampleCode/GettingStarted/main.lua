@@ -1,4 +1,3 @@
-
 ---------------------------------------------------------------------------------
 -- Game Analytics for Corona SDK: Getting started example 
 ---------------------------------------------------------------------------------
@@ -45,7 +44,7 @@ GA.newEvent ( "quality",
 
 -- Custom user events
 GA.newEvent ( "user", { gender = "F", birth_year = "1990", friend_count = 3 } )
-GA.newEvent ( "user", { install_site="Facebook", install_launch="adgroup" })
+GA.newEvent ( "user", { install_site="Facebook", install_campaign="adgroup" })
 
 -- Design example: submit x, y positions when touching the screen
 local function touchHandler ( event )
