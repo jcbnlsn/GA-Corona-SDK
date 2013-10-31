@@ -192,7 +192,7 @@ local function submitUserEvent ( initial )
 	{
 		platform=platformName,
 		os_minor=system.getInfo("platformVersion"),
-		device=system.getInfo("model")..", "..system.getInfo("architectureInfo"),
+		device=system.getInfo("model"),
 		sdk_version="GA Corona SDK v."..sdk_version,
 		build=build,
 	}
