@@ -22,9 +22,9 @@ GameAnalytics.submitWhileRoaming = false
 GameAnalytics.archiveEvents = true
 GameAnalytics.archiveEventsLimit = 512 -- kilobytes 
 GameAnalytics.waitForCustomUserID = false
-GameAnalytics.newSessionOnResume	= false
+GameAnalytics.newSessionOnResume = false
 GameAnalytics.batchRequests = false
-GameAnalytics.batchRequestsInterval	= 30 -- seconds (minimum 1 second)
+GameAnalytics.batchRequestsInterval = 30 -- seconds (minimum 1 second)
 
 -- Quality
 GameAnalytics.submitSystemInfo = false
