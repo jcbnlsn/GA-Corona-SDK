@@ -10,7 +10,7 @@
 -- Written by Jacob Nielsen for Game Analytics in 2013
 ----------------------------------------------------------------------------------
 
-local GameAnalytics, sdk_version = {}, 2.0
+local GameAnalytics, sdk_version = {}, 2.1
 
 -----------------------------------------------
 -- Default values for properties
