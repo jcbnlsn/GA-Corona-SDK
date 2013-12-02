@@ -26,8 +26,9 @@ GA.batchRequestsInterval     = 30       -- seconds (minimum 1 second)
 
 -- Built in quality events
 GA.submitSystemInfo          = true
+
+-- Built in error events
 GA.submitUnhandledErrors     = false
-GA.submitStackTraces         = false
 GA.submitMemoryWarnings      = false    -- iOS only!
 GA.maxErrorCount             = 20       -- errors per session
 

@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------------------
--- Game Analytics for Corona SDK - Version 2.0
+-- Game Analytics for Corona SDK - Version 2.1
 
 -- This code for the Game Analytics SDK is open source - feel free to create 
 -- your own fork or rewrite it for your own needs.
@@ -16,35 +16,36 @@ local GameAnalytics, sdk_version = {}, 2.0
 -- Default values for properties
 -----------------------------------------------
 --Settings
-GameAnalytics.isDebug                   = true
-GameAnalytics.runInSimulator            = true
-GameAnalytics.submitWhileRoaming        = false
-GameAnalytics.archiveEvents             = true
-GameAnalytics.archiveEventsLimit        = 512   -- kilobytes 
-GameAnalytics.waitForCustomUserID       = false
-GameAnalytics.newSessionOnResume        = false
-GameAnalytics.batchRequests             = false
-GameAnalytics.batchRequestsInterval     = 30    -- seconds (minimum 1 second)
+GameAnalytics.isDebug					= true
+GameAnalytics.runInSimulator			= true
+GameAnalytics.submitWhileRoaming		= false
+GameAnalytics.archiveEvents			= true
+GameAnalytics.archiveEventsLimit		= 512   -- kilobytes 
+GameAnalytics.waitForCustomUserID		= false
+GameAnalytics.newSessionOnResume		= false
+GameAnalytics.batchRequests			= false
+GameAnalytics.batchRequestsInterval		= 30    -- seconds (minimum 1 second)
 
 -- Quality
-GameAnalytics.submitSystemInfo          = false
-GameAnalytics.submitUnhandledErrors     = false
-GameAnalytics.submitStackTraces         = false
-GameAnalytics.submitMemoryWarnings      = false -- iOS only!
-GameAnalytics.maxErrorCount             = 20    -- errors per session
+GameAnalytics.submitSystemInfo		= false
+
+-- Error
+GameAnalytics.submitUnhandledErrors	= false
+GameAnalytics.submitMemoryWarnings	= false -- iOS only!
+GameAnalytics.maxErrorCount			= 20    -- errors per session
 
 -- Design
-GameAnalytics.useStoryboard             = false
-GameAnalytics.submitStoryboardEvents    = false
+GameAnalytics.useStoryboard			= false
+GameAnalytics.submitStoryboardEvents	= false
 
-GameAnalytics.submitAverageFps          = false
-GameAnalytics.submitAverageFpsInterval  = 30    -- seconds (minimum 5)
+GameAnalytics.submitAverageFps		= false
+GameAnalytics.submitAverageFpsInterval	= 30    -- seconds (minimum 5)
 
-GameAnalytics.submitCriticalFps         = false
-GameAnalytics.submitCriticalFpsInterval = 5     -- seconds (minimum 5)
-GameAnalytics.criticalFpsRange          = 15    -- frames  (minimum 10)
+GameAnalytics.submitCriticalFps			= false
+GameAnalytics.submitCriticalFpsInterval	= 5     -- seconds (minimum 5)
+GameAnalytics.criticalFpsRange			= 15    -- frames  (minimum 10)
 
-GameAnalytics.criticalFpsBelow          = display.fps/2
+GameAnalytics.criticalFpsBelow			= display.fps/2
 
 -----------------------------------------------
 
@@ -59,7 +60,7 @@ local gameKey, secretKey, userId, build, sessionId, endpointUrl
 local customUserID
 local newEvent, submitEvents
 
-local categories = { design=true, quality=true, user=true, business=true }
+local categories = { design=true, quality=true, user=true, business=true, error=true }
 
 local isSimulator = "simulator" == system.getInfo("environment")
 local platformName = system.getInfo("platformName")
@@ -104,6 +105,7 @@ local function initDebugPrint ()
 	msg["maxErrorCount"] = function () if errorCount-1==GameAnalytics.maxErrorCount then prt(l) prt("ErrorCount="..(errorCount-1)..": Maximum error count reached.") 
 	prt ("No more errors will be submitted in this session!") prt(l) end end
 	msg["newSession"] = function () prt(l) prt ( "New session id generated for resume: "..sessionId) prt(l) end
+	msg["memoryWarningsNotSupported"] = function () prt(l) prt( "Notice! Memory warnings are only supported on iOS devices" ) prt(l) end
 
 	msg["event"] = function ( message )
 		
@@ -396,17 +398,14 @@ end
 local function unhandledErrorListener ( event )
 	errorCount = errorCount+1
 	if errorCount <= GameAnalytics.maxErrorCount then
-		local e = {}
-		if GameAnalytics.submitUnhandledErrors then e[#e+1]={ event_id = "GA:UnhandledError:ErrorMessage", message=event.errorMessage } end
-		if GameAnalytics.submitStackTraces then e[#e+1]={ event_id = "GA:UnhandledError:StackTrace", message=event.stackTrace } end
-		newEvent ( "unhandledError", e[1], e[2] )
+		newEvent ( "error",  { message = event.errorMessage..event.stackTrace, severity="critical" } )
 	else prt( nil, "maxErrorCount" ) end
 end
 
 local function memoryWarningListener ( event ) 
 	errorCount = errorCount+1
 	if errorCount <= GameAnalytics.maxErrorCount then
-		newEvent ( "memoryWarning", { event_id = "GA:MemoryWarning", message=event.name } )
+		newEvent ( "error", { message=event.name, severity="warning" } )
 	else prt( nil, "maxErrorCount" ) end
 end
 
@@ -419,7 +418,7 @@ end
 local function initSubmitMemoryWarnings ()
 	if platformName == "iPhone OS" then 
 		Runtime:addEventListener( "memoryWarning", memoryWarningListener )
-	end
+	else prt( nil, "memoryWarningsNotSupported" ) end
 end
 
 ----------------------------------------
@@ -604,9 +603,9 @@ submitEvents = function ( category, ... )
 		if type(v) ~= "table" then error("GA: Attempt to submit non-table event!", 4) end  
 
 		if not v["session_id"] then
-			v["build"]		= build
-			v["session_id"]	= sessionId
-			v["user_id"] 	= userId
+			v["build"] = build
+			v["session_id"] = sessionId
+			v["user_id"] = userId
 		else
 			eventType = "archived"
 		break end
@@ -704,7 +703,7 @@ function GameAnalytics.init ( params )
 				if GameAnalytics.batchRequests then initBatchRequests () end
 				if GameAnalytics.useStoryboard then initStoryboardListener() end
 				if GameAnalytics.submitMemoryWarnings then initSubmitMemoryWarnings() end
-				if GameAnalytics.submitUnhandledErrors or GameAnalytics.submitStackTraces then initSubmitUnhandledErrors() end
+				if GameAnalytics.submitUnhandledErrors then initSubmitUnhandledErrors() end
 				if GameAnalytics.submitAverageFps or GameAnalytics.submitCriticalFps then initSubmitFps () end
 				if GameAnalytics.submitSystemInfo then timer.performWithDelay ( 100, submitSystemInfo ) end
 				submitUserEvent ( true )

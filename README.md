@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------------
-Game Analytics for Corona SDK v.2.0
+Game Analytics for Corona SDK v.2.1
 ---------------------------------------------------------------------------------
 
 Here you will find the GameAnalytics.lua module you need to copy to your project folder and require to use the GA SDK.

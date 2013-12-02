@@ -17,7 +17,7 @@ storyboard.gotoScene( "scene1", "fade", 300 )
 -- you setup storyboard and call storyboard.gotoScene
 ---------------------------------------------------------------------------------
 
-GA.useStoryboard          = true -- hook storyboard and fill in area parameter in GA events.
+GA.useStoryboard = true -- hook storyboard and fill in area parameter in GA events.
 GA.submitStoryboardEvents = true -- submit scene changes and time spent on scenes.
 
 GA.init ({
