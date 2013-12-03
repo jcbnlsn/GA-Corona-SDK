@@ -15,9 +15,15 @@ local GA = require ( "GameAnalytics" )
 
 GA.isDebug                  = true
 GA.runInSimulator           = true
-GA.submitSystemInfo         = true
-GA.submitAverageFps         = true
+GA.submitSystemInfo         = false
+GA.submitAverageFps         = false
 GA.submitAverageFpsInterval = 10
+
+GA.submitCriticalFps         = true
+GA.submitCriticalFpsInterval = 5     -- seconds (minimum 5)
+GA.criticalFpsRange          = 15    -- frames  (minimum 10)
+
+GA.criticalFpsBelow          = 40
 
 -- Initialize GA
 GA.init ({
@@ -29,7 +35,6 @@ GA.init ({
 ---------------------------------------------
 -- Submit some custom events 
 ---------------------------------------------
-
 -- Custom business event example
 GA.newEvent ( "business", { event_id = "iap:purchase" , currency = "USD", amount = 0.99 } )  
 
