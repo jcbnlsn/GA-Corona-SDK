@@ -34,7 +34,6 @@ Take a look at the storyboard example if you are confused by this!
 
 Notes for Android developers:
 
-- Remember to set: "android.permission.INTERNET" in your build settings.
-
-- Do NOT set: "android.permission.READ_PHONE_STATE" in your build settings.  
-it will prevent your app from sending the right Android IDs to our system!
+- Remember to set android permissions in your build settings:
+"android.permission.INTERNET"
+"android.permission.ACCESS_NETWORK_STATE",

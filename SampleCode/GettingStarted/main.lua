@@ -38,15 +38,6 @@ GA.init ({
 -- Custom business event example
 GA.newEvent ( "business", { event_id = "iap:purchase" , currency = "USD", amount = 0.99 } )  
 
--- Custom quality event example with multiple events in one request.
-local  memUsage =  tostring (collectgarbage( "count" ) )
-local  textureMemUsage = tostring (system.getInfo( "textureMemoryUsed" ))
-
-GA.newEvent ( "quality", 
-	{ event_id = "performance:MemoryUsed", message = memUsage }, 
-	{ event_id = "performance:TextureMemoryUsed", message = textureMemUsage }
-)
-
 -- Custom user events
 GA.newEvent ( "user", { gender = "F", birth_year = "1990", friend_count = 3 } )
 GA.newEvent ( "user", { install_site="Facebook", install_campaign="adgroup" })
