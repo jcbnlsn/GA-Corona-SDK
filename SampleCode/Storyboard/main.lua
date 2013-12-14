@@ -16,6 +16,8 @@ storyboard.gotoScene( "scene1", "fade", 300 )
 -- Important notice: Initialization of Game Analytics should always happend after 
 -- you setup storyboard and call storyboard.gotoScene
 ---------------------------------------------------------------------------------
+GA.isDebug = true
+GA.runInSimulator = true
 
 GA.useStoryboard = true -- hook storyboard and fill in area parameter in GA events.
 GA.submitStoryboardEvents = true -- submit scene changes and time spent on scenes.

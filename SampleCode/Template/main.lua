@@ -25,7 +25,7 @@ GA.batchRequests             = false
 GA.batchRequestsInterval     = 30          -- seconds (minimum 1 second)
 
 -- Built in quality events
-GA.submitSystemInfo          = true
+GA.submitSystemInfo          = false
 
 -- Built in error events
 GA.submitUnhandledErrors     = false

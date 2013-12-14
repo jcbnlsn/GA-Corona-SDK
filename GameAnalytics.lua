@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------------------
--- Game Analytics for Corona SDK - Version 2.1
+-- Game Analytics for Corona SDK - Version 2.11
 
 -- This code for the Game Analytics SDK is open source - feel free to create 
 -- your own fork or rewrite it for your own needs.
@@ -16,36 +16,36 @@ local GameAnalytics, sdk_version = {}, 2.1
 -- Default values for properties
 -----------------------------------------------
 --Settings
-GameAnalytics.isDebug			= true
-GameAnalytics.runInSimulator		= true
-GameAnalytics.submitWhileRoaming		= false
-GameAnalytics.archiveEvents		= true
-GameAnalytics.archiveEventsLimit		= 512 -- kilobytes 
-GameAnalytics.waitForCustomUserID		= false
-GameAnalytics.newSessionOnResume		= false
-GameAnalytics.batchRequests		= false
-GameAnalytics.batchRequestsInterval		= 30 -- seconds (minimum 1 second)
+GameAnalytics.isDebug	= true
+GameAnalytics.runInSimulator = false
+GameAnalytics.submitWhileRoaming = false
+GameAnalytics.archiveEvents = true
+GameAnalytics.archiveEventsLimit = 512 -- kilobytes 
+GameAnalytics.waitForCustomUserID = false
+GameAnalytics.newSessionOnResume	= false
+GameAnalytics.batchRequests = false
+GameAnalytics.batchRequestsInterval	= 30 -- seconds (minimum 1 second)
 
 -- Quality
-GameAnalytics.submitSystemInfo		= false
+GameAnalytics.submitSystemInfo = false
 
 -- Error
-GameAnalytics.submitUnhandledErrors	= false
-GameAnalytics.submitMemoryWarnings	= false -- iOS only!
-GameAnalytics.maxErrorCount		= 20 -- errors per session
+GameAnalytics.submitUnhandledErrors = false
+GameAnalytics.submitMemoryWarnings = false -- iOS only!
+GameAnalytics.maxErrorCount = 20 -- errors per session
 
 -- Design
-GameAnalytics.useStoryboard		= false
-GameAnalytics.submitStoryboardEvents	= false
+GameAnalytics.useStoryboard = false
+GameAnalytics.submitStoryboardEvents = false
 
-GameAnalytics.submitAverageFps		= false
-GameAnalytics.submitAverageFpsInterval	= 30 -- seconds (minimum 5)
+GameAnalytics.submitAverageFps = false
+GameAnalytics.submitAverageFpsInterval = 30 -- seconds (minimum 5)
 
-GameAnalytics.submitCriticalFps		= false
-GameAnalytics.submitCriticalFpsInterval	= 5 -- seconds (minimum 5)
-GameAnalytics.criticalFpsRange		= 15 -- frames  (minimum 10)
+GameAnalytics.submitCriticalFps = false
+GameAnalytics.submitCriticalFpsInterval = 5 -- seconds (minimum 5)
+GameAnalytics.criticalFpsRange = 15 -- frames  (minimum 10)
 
-GameAnalytics.criticalFpsBelow		= display.fps/2
+GameAnalytics.criticalFpsBelow = display.fps/2
 
 -----------------------------------------------
 
@@ -66,6 +66,7 @@ local isSimulator = "simulator" == system.getInfo("environment")
 local platformName = system.getInfo("platformName")
 
 local initialized, disabled, isRoaming, hasConnection = false, false, false, true
+local canDetectNetworkStatusChanges = false
 
 local gameAnalyticsData, dataDirectory
 local storedEventsCount, maxStoredEventsCount, errorCount = 0, 200, 0
@@ -87,7 +88,7 @@ local function initDebugPrint ()
 
 	msg["initialized"] = function ()
 		if customUserID then prt("") prt(dl) prt("Game Analytics initialized with custom user id.") prt(l)
-		else prt(dl) prt("Game Analytics initialized.") prt(l) end
+		else prt(dl) prt("Game Analytics v."..sdk_version.." initialized.") prt(l) end
 		if GameAnalytics.customUserID then prt("Custom user ID: "..tostring(GameAnalytics.customUserID)) 
 		else prt("User ID:       "..tostring(userId)) end 
 		prt("Session ID:    "..tostring(sessionId)) prt(dl) 
@@ -99,8 +100,8 @@ local function initDebugPrint ()
 	msg["disabled"] = function () prt(l) prt("GameAnalytics is disabled in the Corona simulator.") prt(l) end
 	msg["advertisingTrackingDisabled"] = function () prt(dl) prt("Advertising tracking is disabled on this device.") prt("No data will be sent to Game Analytics.") prt(dl) end
 	msg["roamingWarning"] = function () prt(l) prt ( "Warning! It is not possible to detect if this device is roaming." ) prt(l) end
-	msg["submittingArchivedEvents"]	= function ( message ) prt(l) prt ( "Submitting "..message[1].." archived event batch(es) from "..message[2].." session(s)") prt(l) end
-	msg["submittingEventBatch"]	= function ( message ) prt(l) prt ( "Submitting "..message.." batched requests.") prt(l) end
+	msg["submittingArchivedEvents"] = function ( message ) prt(l) prt ( "Submitting "..message[1].." archived event batch(es) from "..message[2].." session(s)") prt(l) end
+	msg["submittingEventBatch"] = function ( message ) prt(l) prt ( "Submitting "..message.." batched requests.") prt(l) end
 	msg["storyboardWarning"] = function () prt(l) prt ( "Warning! You should also enable useStoryboard") prt ("if you wan't to enable submitStoryboardEvents.") prt(l) end
 	msg["maxErrorCount"] = function () if errorCount-1==GameAnalytics.maxErrorCount then prt(l) prt("ErrorCount="..(errorCount-1)..": Maximum error count reached.") 
 	prt ("No more errors will be submitted in this session!") prt(l) end end
@@ -138,6 +139,16 @@ end
 ----------------------------------------
 -- Network reachability
 ----------------------------------------
+local function socketNetworkStatus ()
+	local socket = require("socket")
+	local ping = socket.tcp()
+	ping:settimeout(1000)
+	local connection = ping:connect("www.gameanalytics.com", 80)
+	if connection == nil then hasConnection = false
+	else hasConnection = true end
+	ping:close()
+end
+
 local function networkReachabilityListener ( event )
 	hasConnection = event.isReachable
 	if event.isReachable then
@@ -148,15 +159,11 @@ end
 
 if network.canDetectNetworkStatusChanges then
 	network.setStatusListener( "www.gameanalytics.com", networkReachabilityListener )
+	canDetectNetworkStatusChanges = true
 else
-    local socket = require("socket")
-    local ping = socket.tcp()
-    ping:settimeout(1000)
-    local connection = ping:connect("www.gameanalytics.com", 80)
-    if connection == nil then hasConnection = false end
-    ping:close()
-    prt ( nil, "roamingWarning" )
-    prt ( nil, "connection" )
+	socketNetworkStatus ()
+	prt ( nil, "roamingWarning" )
+	prt ( nil, "connection" )
 end
 
 ----------------------------------------
@@ -327,25 +334,23 @@ local function submitArchivedEvents ()
 				local eventCount, sessionCount = 0, 0
 				for file in lfs.dir( dataDirectory ) do
 					local data = loadData ( system.pathForFile( "/GameAnalyticsData/"..file, system.CachesDirectory ) )
-					if data then
+					if data and data.categories then
 						sessionCount = sessionCount+1
-						for k,v in pairs( categories ) do
-							if data[k] then
-								for i=1,#data[k] do
-									if not data[k][i].session_id then
-										data[k][i].session_id=data.session_id
-										data[k][i].user_id=data.user_id
-										data[k][i].build=data.build
-									end
+		
+						for k,v in pairs( data.categories ) do
+							for i=1,#data.categories[k] do
+								if not data.categories[k][i].session_id then
+									data.categories[k][i].session_id=data.session_id
+									data.categories[k][i].user_id=data.user_id
+									data.categories[k][i].build=data.build
 								end
-								eventCount = eventCount+1
-								newEvent ( k, unpack (data[k]) )  
-							end 
+							end
+							eventCount = eventCount+1
+							newEvent ( k, unpack (data.categories[k]) )  
 						end
-						os.remove ( dataDirectory.."/"..file )
+						os.remove ( dataDirectory.."/"..file ) 
 					end
 				end
-
 				if eventCount>0 then prt ( { eventCount, sessionCount }, "submittingArchivedEvents" ) end 
 				eventsArchived = false
 			end
@@ -497,7 +502,7 @@ local function onSystemEvents ( event )
 			if stb.enterSceneTime then stb.applicationSuspendedSceneTime = os.time()-stb.enterSceneTime end
 			if stb.enterOverlayTime then stb.applicationSuspendedOverlayTime = os.time()-stb.enterOverlayTime end
 		end
-		if GameAnalytics.newSessionOnResume and GameAnalytics.archiveEvents then archiveEvents () end
+		if GameAnalytics.archiveEvents then archiveEvents () end
 
 	elseif event.type == "applicationResume" then
 		if stb then
@@ -506,6 +511,7 @@ local function onSystemEvents ( event )
 			stb.applicationSuspendedOverlayTime, stb.applicationSuspendedOverlayTime = nil, nil
 		end
 		
+		if not canDetectNetworkStatusChanges then socketNetworkStatus() end
 		if GameAnalytics.archiveEvents then initArchiving() end
 		if GameAnalytics.newSessionOnResume then 
 			sessionId = createSessionID() 
@@ -626,8 +632,10 @@ submitEvents = function ( category, ... )
 			storeEvent ( "unknown error, status="..tostring(event.status), category, message )
 		else
 			if GameAnalytics.isDebug then
-				dbgMsg = "Submitting "..eventType.." event(s): "..dbgMsg.." - Server response: "..event.response
-				prt(dbgMsg)
+				if eventType ~= "archived" then
+					dbgMsg = "Submitting "..eventType.." event(s): "..dbgMsg.." - Server response: "..event.response
+					prt(dbgMsg)
+				end
 			end
 		end
 	end
@@ -672,7 +680,12 @@ end
 ----------------------------------------
 function GameAnalytics.init ( params )
 
-	if GameAnalytics.isDebug then initDebugPrint () end
+	if GameAnalytics.isDebug then initDebugPrint () 
+	else 
+		if isSimulator then
+			GameAnalytics.runInSimulator = false
+		end
+	end
 	
 	if isSimulator and not GameAnalytics.runInSimulator then
 		prt ( nil, "disabled" )

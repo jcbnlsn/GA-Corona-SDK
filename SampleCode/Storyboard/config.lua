@@ -9,6 +9,7 @@ application =
 		xAlign = "center",
 		yAlign = "center",
 		fps = 60,
+		graphicsCompatibility = 1
 	},
 }
 

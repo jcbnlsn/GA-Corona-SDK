@@ -2,7 +2,6 @@
 ---------------------------------------------------------------------------------
 Game Analytics for Corona SDK: Getting started example 
 ---------------------------------------------------------------------------------
-
 This example shows how setup the GA SDK and submit some events.
 
 In order to try this example you need to sign up for a Game Analytics account and paste the game 
