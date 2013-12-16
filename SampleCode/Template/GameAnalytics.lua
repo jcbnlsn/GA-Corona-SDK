@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------------------
--- Game Analytics for Corona SDK - Version 2.11
+-- Game Analytics for Corona SDK - Version 2.12
 
 -- This code for the Game Analytics SDK is open source - feel free to create 
 -- your own fork or rewrite it for your own needs.
@@ -403,14 +403,14 @@ end
 local function unhandledErrorListener ( event )
 	errorCount = errorCount+1
 	if errorCount <= GameAnalytics.maxErrorCount then
-		newEvent ( "error",  { message = event.errorMessage..event.stackTrace, severity="critical" } )
+		newEvent ( "unhandledError",  { message = event.errorMessage..event.stackTrace, severity="critical" } )
 	else prt( nil, "maxErrorCount" ) end
 end
 
 local function memoryWarningListener ( event ) 
 	errorCount = errorCount+1
 	if errorCount <= GameAnalytics.maxErrorCount then
-		newEvent ( "error", { message=event.name, severity="warning" } )
+		newEvent ( "memoryWarning", { message=event.name, severity="warning" } )
 	else prt( nil, "maxErrorCount" ) end
 end
 
@@ -588,7 +588,7 @@ end
 ----------------------------------------
 -- Submit events
 ----------------------------------------
-local alias = { systemInfo="quality", storyboard="design", unhandledError="quality", memoryWarning="quality", averageFps="design", criticalFps="design" }
+local alias = { systemInfo="quality", storyboard="design", unhandledError="error", memoryWarning="error", averageFps="design", criticalFps="design" }
 
 submitEvents = function ( category, ... )
 
