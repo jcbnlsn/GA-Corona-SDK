@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------------------
--- Game Analytics for Corona SDK - Version 2.12
+-- Game Analytics for Corona SDK - Version 2.13
 
 -- This code for the Game Analytics SDK is open source - feel free to create 
 -- your own fork or rewrite it for your own needs.
@@ -573,7 +573,7 @@ addStoryboardEventListeners = function ()
 end
 
 local function initStoryboardListener ()
-	storyboard, stb = require "storyboard", {}
+	storyboard, stb = require "storyboard", { enterSceneTime = os.time(), enterOverlayTime = os.time(), currentSceneName = "" }
 	local sceneName = storyboard.getCurrentSceneName()
 	if sceneName then
 		timer.performWithDelay( 20, function ()
