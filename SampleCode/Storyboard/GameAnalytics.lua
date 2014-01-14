@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------------------
--- Game Analytics for Corona SDK - Version 2.13
+-- Game Analytics for Corona SDK - Version 2.14
 
 -- This code for the Game Analytics SDK is open source - feel free to create 
 -- your own fork or rewrite it for your own needs.
@@ -10,7 +10,7 @@
 -- Written by Jacob Nielsen for Game Analytics in 2013
 ----------------------------------------------------------------------------------
 
-local GameAnalytics, sdk_version = {}, 2.1
+local GameAnalytics, sdk_version = {}, 2.14
 
 -----------------------------------------------
 -- Default values for properties
@@ -441,7 +441,7 @@ local function submitCriticalFps ( fps )
 	criticalFpsSubmitEnabled = false
 	errorCount = errorCount+1
 	if errorCount <= GameAnalytics.maxErrorCount then
-		newEvent ( "criticalFps", { event_id="GA:CriticalFps", value=fps })
+		newEvent ( "criticalFps", { event_id="GA:CriticalFPS", value=fps })
 		timer.performWithDelay( GameAnalytics.submitCriticalFpsInterval*1000, enableCriticalFps )
 	else prt (nil, "maxErrorCount") end
 end
@@ -467,7 +467,7 @@ end
 local function submitAverageFps ()
 	local td = tt/uc
 	local fps = r(1000/(td))
-	newEvent ( "averageFps", { event_id="GA:AverageFps", value=fps })
+	newEvent ( "averageFps", { event_id="GA:AverageFPS", value=fps })
 	uc,tt = 0,0
 end
 
