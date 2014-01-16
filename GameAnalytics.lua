@@ -10,7 +10,7 @@
 -- Written by Jacob Nielsen for Game Analytics in 2013
 ----------------------------------------------------------------------------------
 
-local GameAnalytics, sdk_version = {}, 2.14
+local GameAnalytics, sdk_version = {}, "0.2.14"
 
 -----------------------------------------------
 -- Default values for properties
@@ -88,7 +88,7 @@ local function initDebugPrint ()
 
 	msg["initialized"] = function ()
 		if customUserID then prt("") prt(dl) prt("Game Analytics initialized with custom user id.") prt(l)
-		else prt(dl) prt("Game Analytics v."..sdk_version.." initialized.") prt(l) end
+		else prt(dl) prt("Game Analytics v. "..sdk_version.." initialized.") prt(l) end
 		if GameAnalytics.customUserID then prt("Custom user ID: "..tostring(GameAnalytics.customUserID)) 
 		else prt("User ID:       "..tostring(userId)) end 
 		prt("Session ID:    "..tostring(sessionId)) prt(dl) 
@@ -202,7 +202,7 @@ local function submitUserEvent ( initial )
 		platform=platformName,
 		os_minor=system.getInfo("platformVersion"),
 		device=system.getInfo("model"),
-		sdk_version="GA Corona SDK v."..sdk_version,
+		sdk_version="corona "..sdk_version,
 		build=build,
 	}
 	
