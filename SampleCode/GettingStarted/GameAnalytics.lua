@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------------------
--- Game Analytics for Corona SDK - Version 2.14
+-- Game Analytics for Corona SDK 
 
 -- This code for the Game Analytics SDK is open source - feel free to create 
 -- your own fork or rewrite it for your own needs.
@@ -10,19 +10,19 @@
 -- Written by Jacob Nielsen for Game Analytics in 2013
 ----------------------------------------------------------------------------------
 
-local GameAnalytics, sdk_version = {}, "0.2.14"
+local GameAnalytics, sdk_version = {}, "0.2.15"
 
 -----------------------------------------------
 -- Default values for properties
 -----------------------------------------------
 --Settings
-GameAnalytics.isDebug	= true
+GameAnalytics.isDebug = true
 GameAnalytics.runInSimulator = false
 GameAnalytics.submitWhileRoaming = false
 GameAnalytics.archiveEvents = true
 GameAnalytics.archiveEventsLimit = 512 -- kilobytes 
 GameAnalytics.waitForCustomUserID = false
-GameAnalytics.newSessionOnResume	= false
+GameAnalytics.newSessionOnResume = false
 GameAnalytics.batchRequests = false
 GameAnalytics.batchRequestsInterval	= 30 -- seconds (minimum 1 second)
 
@@ -573,13 +573,12 @@ addStoryboardEventListeners = function ()
 end
 
 local function initStoryboardListener ()
-	storyboard, stb = require "storyboard", { enterSceneTime = os.time(), enterOverlayTime = os.time(), currentSceneName = "" }
+	storyboard = require "storyboard"
 	local sceneName = storyboard.getCurrentSceneName()
 	if sceneName then
-		timer.performWithDelay( 20, function ()
-			stb.currentScene = storyboard.getScene( sceneName )
-			addStoryboardEventListeners ()
-		end )
+		stb = { enterSceneTime = os.time(), enterOverlayTime = os.time(), currentSceneName = sceneName }
+		stb.currentScene = storyboard.getScene( sceneName )
+		addStoryboardEventListeners ()
 	else
 		error ( "GA: You MUST require storyboard and call storyboard.gotoScene BEFORE initializing Game Analytics in your main file.", 3 )
 	end
