@@ -10,7 +10,7 @@
 -- Written by Jacob Nielsen for Game Analytics in 2013
 ----------------------------------------------------------------------------------
 
-local GameAnalytics, sdk_version = {}, "0.2.15"
+local GameAnalytics, sdk_version = {}, "0.2.16"
 
 -----------------------------------------------
 -- Default values for properties
@@ -573,11 +573,11 @@ addStoryboardEventListeners = function ()
 end
 
 local function initStoryboardListener ()
-	storyboard = require "storyboard"
+	storyboard, stb = require "storyboard", { enterSceneTime = os.time(), enterOverlayTime = os.time() }
 	local sceneName = storyboard.getCurrentSceneName()
 	if sceneName then
-		stb = { enterSceneTime = os.time(), enterOverlayTime = os.time(), currentSceneName = sceneName }
 		stb.currentScene = storyboard.getScene( sceneName )
+		stb.currentSceneName = "main"
 		addStoryboardEventListeners ()
 	else
 		error ( "GA: You MUST require storyboard and call storyboard.gotoScene BEFORE initializing Game Analytics in your main file.", 3 )
@@ -747,7 +747,7 @@ function GameAnalytics.newEvent ( category, ... )
 			if GameAnalytics.waitForCustomUserID and not customUserID then
 				prt ( "Event discarded. Waiting for custom user id!" )
 			else
-				error ( "GA: You have to initialize Game Analytics before submitting events!", 2 )
+				if GameAnalytics.isDebug then print ( "GA: Event discarded. Waiting for GameAnalytics to initialize." ) end
 			end
 		end
 	end
