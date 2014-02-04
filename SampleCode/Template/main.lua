@@ -36,6 +36,9 @@ GA.maxErrorCount             = 20       -- errors per session
 GA.useStoryboard             = false
 GA.submitStoryboardEvents    = false
 
+GA.useComposer				= false
+GA.submitComposerEvents		= false
+
 GA.submitAverageFps          = false
 GA.submitAverageFpsInterval  = 30       -- seconds (minimum 5)
 

@@ -10,7 +10,7 @@
 -- Written by Jacob Nielsen for Game Analytics in 2013
 ----------------------------------------------------------------------------------
 
-local GameAnalytics, sdk_version = {}, "0.2.16"
+local GameAnalytics, sdk_version = {}, "0.2.2"
 
 -----------------------------------------------
 -- Default values for properties
@@ -74,7 +74,7 @@ local archiveEventsLimitReached, eventsArchived = false, false
 
 local minBatchRequestsInterval, minAverageFpsInterval, minCriticalFpsInterval, minCriticalFpsRange = 1, 5, 5, 10
 
-local stb, storyboard
+local manager, storyboard, composer
 local prt = function () end
 
 ---------------------------------------- 
@@ -498,17 +498,17 @@ local function onSystemEvents ( event )
 		if GameAnalytics.archiveEvents then archiveEvents () end
 
 	elseif event.type == "applicationSuspend" then
-		if stb then
-			if stb.enterSceneTime then stb.applicationSuspendedSceneTime = os.time()-stb.enterSceneTime end
-			if stb.enterOverlayTime then stb.applicationSuspendedOverlayTime = os.time()-stb.enterOverlayTime end
+		if manager then
+			if manager.enterSceneTime then manager.applicationSuspendedSceneTime = os.time()-manager.enterSceneTime end
+			if manager.enterOverlayTime then manager.applicationSuspendedOverlayTime = os.time()-manager.enterOverlayTime end
 		end
 		if GameAnalytics.archiveEvents then archiveEvents () end
 
 	elseif event.type == "applicationResume" then
-		if stb then
-			if stb.applicationSuspendedSceneTime and stb.enterSceneTime then stb.enterSceneTime = os.time()-stb.applicationSuspendedSceneTime end
-			if stb.applicationSuspendedOverlayTime and stb.enterOverlayTime then stb.enterOverlayTime = os.time()-stb.applicationSuspendedOverlayTime end
-			stb.applicationSuspendedOverlayTime, stb.applicationSuspendedOverlayTime = nil, nil
+		if manager then
+			if manager.applicationSuspendedSceneTime and manager.enterSceneTime then manager.enterSceneTime = os.time()-manager.applicationSuspendedSceneTime end
+			if manager.applicationSuspendedOverlayTime and manager.enterOverlayTime then manager.enterOverlayTime = os.time()-manager.applicationSuspendedOverlayTime end
+			manager.applicationSuspendedOverlayTime, manager.applicationSuspendedOverlayTime = nil, nil
 		end
 		
 		if not canDetectNetworkStatusChanges then socketNetworkStatus() end
@@ -520,6 +520,7 @@ local function onSystemEvents ( event )
 		end
 	end
 end
+
 
 ----------------------------------------
 -- Storyboard events
@@ -534,33 +535,33 @@ storyboardEventHandler = function ( e )
 	if e.name == "enterScene" then
 		
 		local previousSceneName = storyboard.getPrevious()
-		stb.currentSceneName = storyboard.getCurrentSceneName()
-		stb.enterSceneTime = os.time()
+		manager.currentSceneName = storyboard.getCurrentSceneName()
+		manager.enterSceneTime = os.time()
 
-		storyboardEvent = { event_id="GA:Storyboard:EnterScene", area=stb.currentSceneName }
+		storyboardEvent = { event_id="GA:Storyboard:EnterScene", area=manager.currentSceneName }
 
 	elseif e.name == "didExitScene" then
 
-		for i=1,#eventListeners do stb.currentScene:removeEventListener( eventListeners[i], storyboardEventHandler ) end
+		for i=1,#eventListeners do manager.currentScene:removeEventListener( eventListeners[i], storyboardEventHandler ) end
 		
-		local timeSpentOnScene = os.time() - stb.enterSceneTime
+		local timeSpentOnScene = os.time() - manager.enterSceneTime
 		local nextSceneName = storyboard.getCurrentSceneName()
 
-		storyboardEvent = { event_id = "GA:Storyboard:ExitScene", area=stb.currentSceneName, value=timeSpentOnScene }
+		storyboardEvent = { event_id = "GA:Storyboard:ExitScene", area=manager.currentSceneName, value=timeSpentOnScene }
 
-		stb.currentSceneName = nextSceneName
-		stb.currentScene = storyboard.getScene( nextSceneName )
-		addStoryboardEventListeners ( stb.currentScene ) 
+		manager.currentSceneName = nextSceneName
+		manager.currentScene = storyboard.getScene( nextSceneName )
+		addStoryboardEventListeners ( manager.currentScene ) 
 	
 	elseif e.name == "overlayBegan" then
 
-		stb.enterOverlayTime = os.time()
-		storyboardEvent = { event_id="GA:Storyboard:OverlayBegan", area=stb.currentSceneName..":"..e.sceneName }
+		manager.enterOverlayTime = os.time()
+		storyboardEvent = { event_id="GA:Storyboard:OverlayBegan", area=manager.currentSceneName..":"..e.sceneName }
 	
 	elseif e.name == "overlayEnded" then
 
-		local timeSpentOnOverlay = os.time() - stb.enterOverlayTime
-		storyboardEvent = { event_id="GA:Storyboard:OverlayEnded", area=stb.currentSceneName..":"..e.sceneName, value=timeSpentOnOverlay }
+		local timeSpentOnOverlay = os.time() - manager.enterOverlayTime
+		storyboardEvent = { event_id="GA:Storyboard:OverlayEnded", area=manager.currentSceneName..":"..e.sceneName, value=timeSpentOnOverlay }
 	end
 
 	if GameAnalytics.submitStoryboardEvents and storyboardEvent then newEvent ( "storyboard", storyboardEvent ) end
@@ -568,16 +569,16 @@ end
 
 addStoryboardEventListeners = function ()
 	for i=1,#eventListeners do 
-		stb.currentScene:addEventListener( eventListeners[i], storyboardEventHandler ) 
+		manager.currentScene:addEventListener( eventListeners[i], storyboardEventHandler ) 
 	end
 end
 
 local function initStoryboardListener ()
-	storyboard, stb = require "storyboard", { enterSceneTime = os.time(), enterOverlayTime = os.time() }
+	storyboard, manager = require "storyboard", { enterSceneTime = os.time(), enterOverlayTime = os.time() }
 	local sceneName = storyboard.getCurrentSceneName()
 	if sceneName then
-		stb.currentScene = storyboard.getScene( sceneName )
-		stb.currentSceneName = "main"
+		manager.currentScene = storyboard.getScene( sceneName )
+		manager.currentSceneName = "main"
 		addStoryboardEventListeners ()
 	else
 		error ( "GA: You MUST require storyboard and call storyboard.gotoScene BEFORE initializing Game Analytics in your main file.", 3 )
@@ -650,8 +651,8 @@ newEvent = function ( category, ... )
 
 		local message, area = {...}
 		
-		if stb and stb.currentSceneName then 
-			local area = stb.currentSceneName
+		if manager and manager.currentSceneName then 
+			local area = manager.currentSceneName
 			if category~="user" then
 				for k,v in pairs( message ) do
 					v["area"] = v["area"] or area

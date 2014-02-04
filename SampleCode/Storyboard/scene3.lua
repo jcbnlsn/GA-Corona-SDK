@@ -46,38 +46,36 @@ end
 
 -- Called immediately after scene has moved onscreen:
 function scene:enterScene( event )
-        local group = self.view
+    local group = self.view
 
-        local function changeSceneHandler ( event )
-        	if "ended" == event.phase then
-            	background:removeEventListener ( "touch", changeSceneHandler )
-                storyboard.gotoScene( "scene1", { effect = "slideRight", time = 800 } )
-    		end
+    local function changeSceneHandler ( event )
+     	if "ended" == event.phase then
+        	background:removeEventListener ( "touch", changeSceneHandler )
+            storyboard.gotoScene( "scene1", { effect = "slideRight", time = 800 } )
+    	end
+    end
+
+    -- custom event
+    local function customEventHandler ( event )
+    	if "ended" == event.phase then
+
+            ---------------------------------------------------------------------------
+            -- GA: Below we are submitting a custom event. 
+            -- As you will notice (when looking at the printed event in the terminal) the 
+            -- storyboard scene name is assigned automatically to the area parameter by     
+            -- the Game Analytics SDK. If you want to overrule this assignment then just 
+            -- fill in your own value for the area parameter in your custom event.
+            ---------------------------------------------------------------------------
+    		GA.newEvent ( "design", { event_id="some_custom_event"} )
+
+    		-- Change touch to change scene handler 
+            background:removeEventListener ( "touch", customEventHandler )
+        	timer.performWithDelay( 500, function ()
+        	   background:addEventListener( "touch", changeSceneHandler )
+    	       tf2.text = "(tap to change scene)"
+        	end )
         end
-
-        -- custom event
-        local function customEventHandler ( event )
-        	if "ended" == event.phase then
-
-
-                ---------------------------------------------------------------------------
-                -- GA: Below we are submitting a custom event. 
-                -- As you will notice (when looking at the printed event in the terminal) the 
-                -- storyboard scene name is assigned automatically to the area parameter by 
-                -- the Game Analytics SDK. If you want to overrule this assignment then just 
-                -- fill in your own value for the area parameter in your custom event.
-                ---------------------------------------------------------------------------
-        		GA.newEvent ( "design", { event_id="some_custom_event"} )
-
-
-        		-- Change touch to change scene handler
-                background:removeEventListener ( "touch", customEventHandler )
-            		timer.performWithDelay( 500, function ()
-            			background:addEventListener( "touch", changeSceneHandler )
-            			tf2.text = "(tap to change scene)"
-            		end )
-                end
-        end
+    end
 	background:addEventListener ( "touch", customEventHandler )
 end
 

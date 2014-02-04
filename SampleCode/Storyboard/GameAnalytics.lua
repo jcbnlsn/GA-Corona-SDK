@@ -10,7 +10,7 @@
 -- Written by Jacob Nielsen for Game Analytics in 2013
 ----------------------------------------------------------------------------------
 
-local GameAnalytics, sdk_version = {}, "0.2.16"
+local GameAnalytics, sdk_version = {}, "0.2.2"
 
 -----------------------------------------------
 -- Default values for properties
@@ -37,6 +37,9 @@ GameAnalytics.maxErrorCount = 20 -- errors per session
 -- Design
 GameAnalytics.useStoryboard = false
 GameAnalytics.submitStoryboardEvents = false
+
+GameAnalytics.useComposer = false
+GameAnalytics.submitComposerEvents = false
 
 GameAnalytics.submitAverageFps = false
 GameAnalytics.submitAverageFpsInterval = 30 -- seconds (minimum 5)
@@ -74,7 +77,7 @@ local archiveEventsLimitReached, eventsArchived = false, false
 
 local minBatchRequestsInterval, minAverageFpsInterval, minCriticalFpsInterval, minCriticalFpsRange = 1, 5, 5, 10
 
-local stb, storyboard
+local manager, sceneInfo, managerType
 local prt = function () end
 
 ---------------------------------------- 
@@ -103,6 +106,7 @@ local function initDebugPrint ()
 	msg["submittingArchivedEvents"] = function ( message ) prt(l) prt ( "Submitting "..message[1].." archived event batch(es) from "..message[2].." session(s)") prt(l) end
 	msg["submittingEventBatch"] = function ( message ) prt(l) prt ( "Submitting "..message.." batched requests.") prt(l) end
 	msg["storyboardWarning"] = function () prt(l) prt ( "Warning! You should also enable useStoryboard") prt ("if you wan't to enable submitStoryboardEvents.") prt(l) end
+	msg["composerWarning"] = function () prt(l) prt ( "Warning! You should also enable useComposer") prt ("if you wan't to enable submitComposerEvents.") prt(l) end
 	msg["maxErrorCount"] = function () if errorCount-1==GameAnalytics.maxErrorCount then prt(l) prt("ErrorCount="..(errorCount-1)..": Maximum error count reached.") 
 	prt ("No more errors will be submitted in this session!") prt(l) end end
 	msg["newSession"] = function () prt(l) prt ( "New session id generated for resume: "..sessionId) prt(l) end
@@ -498,17 +502,17 @@ local function onSystemEvents ( event )
 		if GameAnalytics.archiveEvents then archiveEvents () end
 
 	elseif event.type == "applicationSuspend" then
-		if stb then
-			if stb.enterSceneTime then stb.applicationSuspendedSceneTime = os.time()-stb.enterSceneTime end
-			if stb.enterOverlayTime then stb.applicationSuspendedOverlayTime = os.time()-stb.enterOverlayTime end
+		if sceneInfo then
+			if sceneInfo.enterSceneTime then sceneInfo.applicationSuspendedSceneTime = os.time()-sceneInfo.enterSceneTime end
+			if sceneInfo.enterOverlayTime then sceneInfo.applicationSuspendedOverlayTime = os.time()-sceneInfo.enterOverlayTime end
 		end
 		if GameAnalytics.archiveEvents then archiveEvents () end
 
 	elseif event.type == "applicationResume" then
-		if stb then
-			if stb.applicationSuspendedSceneTime and stb.enterSceneTime then stb.enterSceneTime = os.time()-stb.applicationSuspendedSceneTime end
-			if stb.applicationSuspendedOverlayTime and stb.enterOverlayTime then stb.enterOverlayTime = os.time()-stb.applicationSuspendedOverlayTime end
-			stb.applicationSuspendedOverlayTime, stb.applicationSuspendedOverlayTime = nil, nil
+		if sceneInfo then
+			if sceneInfo.applicationSuspendedSceneTime and sceneInfo.enterSceneTime then sceneInfo.enterSceneTime = os.time()-sceneInfo.applicationSuspendedSceneTime end
+			if sceneInfo.applicationSuspendedOverlayTime and sceneInfo.enterOverlayTime then sceneInfo.enterOverlayTime = os.time()-sceneInfo.applicationSuspendedOverlayTime end
+			sceneInfo.applicationSuspendedOverlayTime, sceneInfo.applicationSuspendedOverlayTime = nil, nil
 		end
 		
 		if not canDetectNetworkStatusChanges then socketNetworkStatus() end
@@ -522,72 +526,118 @@ local function onSystemEvents ( event )
 end
 
 ----------------------------------------
--- Storyboard events
+-- Scene events
 ----------------------------------------
-local addStoryboardEventListeners, storyboardEventHandler
-local eventListeners = { "enterScene", "didExitScene", "overlayBegan", "overlayEnded" }
+local addSceneEventListeners, sceneEventHandler, sceneEvents
 
-storyboardEventHandler = function ( e )
+sceneEventHandler = function ( e )
 
-	local storyboardEvent 
+	local sceneEvent 
 
-	if e.name == "enterScene" then
-		
-		local previousSceneName = storyboard.getPrevious()
-		stb.currentSceneName = storyboard.getCurrentSceneName()
-		stb.enterSceneTime = os.time()
+	if sceneInfo.isComposer then
+		if e.phase == "did" then
+			if e.name == "show" then
+				
+				local previousSceneName = manager.getSceneName( "previous" )
+				sceneInfo.currentSceneName = manager.getSceneName( "current" )
+				sceneInfo.enterSceneTime = os.time()
 
-		storyboardEvent = { event_id="GA:Storyboard:EnterScene", area=stb.currentSceneName }
+				sceneEvent = { event_id="GA:Composer:Show", area=sceneInfo.currentSceneName }
 
-	elseif e.name == "didExitScene" then
+			elseif e.name == "hide" then
 
-		for i=1,#eventListeners do stb.currentScene:removeEventListener( eventListeners[i], storyboardEventHandler ) end
-		
-		local timeSpentOnScene = os.time() - stb.enterSceneTime
-		local nextSceneName = storyboard.getCurrentSceneName()
+				for i=1,#sceneEvents do sceneInfo.currentScene:removeEventListener( sceneEvents[i], sceneEventHandler ) end
+			
+				local timeSpentOnScene = os.time() - sceneInfo.enterSceneTime
+				local nextSceneName = manager.getSceneName( "current" )
 
-		storyboardEvent = { event_id = "GA:Storyboard:ExitScene", area=stb.currentSceneName, value=timeSpentOnScene }
+				sceneEvent = { event_id = "GA:Composer:Hide", area=sceneInfo.currentSceneName, value=timeSpentOnScene }
 
-		stb.currentSceneName = nextSceneName
-		stb.currentScene = storyboard.getScene( nextSceneName )
-		addStoryboardEventListeners ( stb.currentScene ) 
-	
-	elseif e.name == "overlayBegan" then
-
-		stb.enterOverlayTime = os.time()
-		storyboardEvent = { event_id="GA:Storyboard:OverlayBegan", area=stb.currentSceneName..":"..e.sceneName }
-	
-	elseif e.name == "overlayEnded" then
-
-		local timeSpentOnOverlay = os.time() - stb.enterOverlayTime
-		storyboardEvent = { event_id="GA:Storyboard:OverlayEnded", area=stb.currentSceneName..":"..e.sceneName, value=timeSpentOnOverlay }
-	end
-
-	if GameAnalytics.submitStoryboardEvents and storyboardEvent then newEvent ( "storyboard", storyboardEvent ) end
-end
-
-addStoryboardEventListeners = function ()
-	for i=1,#eventListeners do 
-		stb.currentScene:addEventListener( eventListeners[i], storyboardEventHandler ) 
-	end
-end
-
-local function initStoryboardListener ()
-	storyboard, stb = require "storyboard", { enterSceneTime = os.time(), enterOverlayTime = os.time() }
-	local sceneName = storyboard.getCurrentSceneName()
-	if sceneName then
-		stb.currentScene = storyboard.getScene( sceneName )
-		stb.currentSceneName = "main"
-		addStoryboardEventListeners ()
+				sceneInfo.currentSceneName = nextSceneName
+				sceneInfo.currentScene = manager.getScene( nextSceneName )
+				addSceneEventListeners ( sceneInfo.currentScene ) 
+			end
+		end
 	else
-		error ( "GA: You MUST require storyboard and call storyboard.gotoScene BEFORE initializing Game Analytics in your main file.", 3 )
+		if e.name == "enterScene" then
+			
+			local previousSceneName = manager.getPrevious()
+			sceneInfo.currentSceneName = manager.getCurrentSceneName()
+			sceneInfo.enterSceneTime = os.time()
+
+			sceneEvent = { event_id="GA:Storyboard:EnterScene", area=sceneInfo.currentSceneName }
+
+		elseif e.name == "didExitScene" then
+
+			for i=1,#sceneEvents do sceneInfo.currentScene:removeEventListener( sceneEvents[i], sceneEventHandler ) end
+			
+			local timeSpentOnScene = os.time() - sceneInfo.enterSceneTime
+			local nextSceneName = manager.getCurrentSceneName()
+
+			sceneEvent = { event_id = "GA:Storyboard:ExitScene", area=sceneInfo.currentSceneName, value=timeSpentOnScene }
+
+			sceneInfo.currentSceneName = nextSceneName
+			sceneInfo.currentScene = manager.getScene( nextSceneName )
+			addSceneEventListeners ( sceneInfo.currentScene ) 
+		
+		elseif e.name == "overlayBegan" then
+
+			sceneInfo.enterOverlayTime = os.time()
+			sceneEvent = { event_id="GA:Storyboard:OverlayBegan", area=sceneInfo.currentSceneName..":"..e.sceneName }
+		
+		elseif e.name == "overlayEnded" then
+
+			local timeSpentOnOverlay = os.time() - sceneInfo.enterOverlayTime
+			sceneEvent = { event_id="GA:Storyboard:OverlayEnded", area=sceneInfo.currentSceneName..":"..e.sceneName, value=timeSpentOnOverlay }
+		end
+	end
+
+	if sceneEvent then newEvent ( managerType, sceneEvent ) end
+end
+
+addSceneEventListeners = function ()
+	for i=1,#sceneEvents do 
+		sceneInfo.currentScene:addEventListener( sceneEvents[i], sceneEventHandler ) 
+	end
+end
+
+local function initSceneListener ( type )
+	if GameAnalytics.useStoryboard and GameAnalytics.useComposer then
+		error ( "GA: You can not use Composer and Storyboard at the same time!" )
+	else
+		managerType = type
+		manager = require ( managerType )
+
+		sceneInfo = { 
+			enterSceneTime = os.time(), 
+			enterOverlayTime = os.time(), 
+			isComposer = "composer" == managerType
+		}
+
+		local sceneName
+
+		if sceneInfo.isComposer then
+			sceneName = manager.getSceneName( "current" )
+			sceneEvents = { "show", "hide" } 
+		else 
+			sceneName = manager.getCurrentSceneName()
+			sceneEvents = { "enterScene", "didExitScene", "overlayBegan", "overlayEnded" }
+		end
+
+		if sceneName then
+			sceneInfo.currentScene = manager.getScene( sceneName )
+			sceneInfo.currentSceneName = "main"
+			addSceneEventListeners ()
+		else
+			error ( "GA: You MUST require "..managerType.." and call "..managerType..".gotoScene BEFORE initializing Game Analytics in your main file.", 3 )
+		end
 	end
 end
 
 ----------------------------------------
 -- Submit events
 ----------------------------------------
-local alias = { systemInfo="quality", storyboard="design", unhandledError="error", memoryWarning="error", averageFps="design", criticalFps="design" }
+local alias = { systemInfo="quality", storyboard="design", composer="design", unhandledError="error", memoryWarning="error", averageFps="design", criticalFps="design" }
 
 submitEvents = function ( category, ... )
 
@@ -650,8 +700,8 @@ newEvent = function ( category, ... )
 
 		local message, area = {...}
 		
-		if stb and stb.currentSceneName then 
-			local area = stb.currentSceneName
+		if sceneInfo and sceneInfo.currentSceneName then 
+			local area = sceneInfo.currentSceneName
 			if category~="user" then
 				for k,v in pairs( message ) do
 					v["area"] = v["area"] or area
@@ -713,7 +763,8 @@ function GameAnalytics.init ( params )
 
 				if GameAnalytics.archiveEvents then initArchiving() end
 				if GameAnalytics.batchRequests then initBatchRequests () end
-				if GameAnalytics.useStoryboard then initStoryboardListener() end
+				if GameAnalytics.useStoryboard then initSceneListener("storyboard") 
+				elseif GameAnalytics.useComposer then initSceneListener("composer") end
 				if GameAnalytics.submitMemoryWarnings then initSubmitMemoryWarnings() end
 				if GameAnalytics.submitUnhandledErrors then initSubmitUnhandledErrors() end
 				if GameAnalytics.submitAverageFps or GameAnalytics.submitCriticalFps then initSubmitFps () end
@@ -725,6 +776,8 @@ function GameAnalytics.init ( params )
 
 				if not GameAnalytics.useStoryboard and GameAnalytics.submitStoryboardEvents then
 					prt ( nil, "storyboardWarning")
+				elseif not GameAnalytics.useComposer and GameAnalytics.submitComposerEvents then
+					prt ( nil, "composerWarning")
 				end
 			end
 		end
