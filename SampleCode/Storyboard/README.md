@@ -1,13 +1,13 @@
 
 ---------------------------------------------------------------------------------
-Game Analytics for Corona SDK: Storyboard example 
+GameAnalytics for Corona SDK: Storyboard example 
 ---------------------------------------------------------------------------------
 
-This is a simple example showing how to use the Game Analytics SDK with storyboard (Corona's built in 
+This is a simple example showing how to use the GameAnalytics SDK with storyboard (Corona's built in 
 scene management system). When using storyboard the GA SDK is context aware and can automatically
 submit events for scene changes.
 
-In order to try this example you need to sign up for a Game Analytics account and paste the game 
+In order to try this example you need to sign up for a GameAnalytics account and paste the game 
 key and secret key you recieve in the initialization fields in the main.lua file.
 
 When running this example you should look at the Corona terminal to see what events are being 
