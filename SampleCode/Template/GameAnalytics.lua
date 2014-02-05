@@ -592,7 +592,7 @@ sceneEventHandler = function ( e )
 		end
 	end
 
-	if sceneEvent then newEvent ( managerType, sceneEvent ) end
+	if sceneEvent and sceneInfo.submitEvents then newEvent ( managerType, sceneEvent ) end
 end
 
 addSceneEventListeners = function ()
@@ -618,10 +618,12 @@ local function initSceneListener ( type )
 
 		if sceneInfo.isComposer then
 			sceneName = manager.getSceneName( "current" )
-			sceneEvents = { "show", "hide" } 
+			sceneEvents = { "show", "hide" }
+			if GameAnalytics.submitComposerEvents then sceneInfo.submitEvents = true end
 		else 
 			sceneName = manager.getCurrentSceneName()
 			sceneEvents = { "enterScene", "didExitScene", "overlayBegan", "overlayEnded" }
+			if GameAnalytics.submitStoryboardEvents then sceneInfo.submitEvents = true end
 		end
 
 		if sceneName then

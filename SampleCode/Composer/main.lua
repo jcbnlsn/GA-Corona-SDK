@@ -19,7 +19,7 @@ GA.isDebug = true
 GA.runInSimulator = true
 
 GA.useComposer = true -- hook composer and fill in area parameter in GA events.
-GA.submitComposerEvents = true -- submit scene changes and time spent on scenes.
+GA.submitComposerEvents = true-- submit scene changes and time spent on scenes.
 
 GA.init ({
 	game_key   = 'paste_your_game_key_here',
