@@ -10,6 +10,10 @@ local GA = require ( "GameAnalytics" )
 -- To get an overview all the properties you can set are listed below.
 -- To simplify your code you can omit the ones you don't want to change from their default values.
 
+-- Note: If you are building for iOS and your app doesn't have ads in it then you should 
+-- set the GameAnalytics.iosIdentifierForVendor to true ( or Apple might reject the app! )
+GA.iosIdentifierForVendor 	 = false 
+
 --Settings
 GA.isDebug                   = true
 GA.runInSimulator            = true
