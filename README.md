@@ -18,6 +18,7 @@ New in this version:
 
 v.0.2.3
 + Optional use of "iosIdentifierForVendor" instead of "iosAdvertisingIdentifier"
+
 Note: If you are building for iOS and your app doesn't have ads in it, then you should 
 set the GameAnalytics.iosIdentifierForVendor property to true - or Apple might reject the app!
 
