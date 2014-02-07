@@ -1,6 +1,6 @@
 
 ---------------------------------------------------------------------------------
-GameAnalytics for Corona SDK: Template
+Game Analytics for Corona SDK: Template
 ---------------------------------------------------------------------------------
 
 This template lists all the properties and features of the GA SDK.

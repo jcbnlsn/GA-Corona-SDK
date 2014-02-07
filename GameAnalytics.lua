@@ -10,11 +10,14 @@
 -- Written by Jacob Nielsen for Game Analytics in 2013
 ----------------------------------------------------------------------------------
 
-local GameAnalytics, sdk_version = {}, "0.2.2"
+local GameAnalytics, sdk_version = {}, "0.2.3"
 
 -----------------------------------------------
 -- Default values for properties
 -----------------------------------------------
+-- iOS id
+GameAnalytics.iosIdentifierForVendor = false
+
 --Settings
 GameAnalytics.isDebug = true
 GameAnalytics.runInSimulator = false
@@ -210,7 +213,7 @@ local function submitUserEvent ( initial )
 		build=build,
 	}
 	
-	if platformName == "iPhone OS" then userEvent["ios_id"]=system.getInfo( "iosAdvertisingIdentifier" )
+	if platformName == "iPhone OS" and not GameAnalytics.iosIdentifierForVendor then userEvent["ios_id"]=system.getInfo( "iosAdvertisingIdentifier" )
 	elseif platformName == "Android" then userEvent["android_id"]=system.getInfo("deviceID") end
 
 	if initial then
@@ -268,7 +271,9 @@ end
 ----------------------------------------
 local function getUserID ()
 	if platformName == "iPhone OS" then
-		local userID = system.getInfo ( "iosAdvertisingIdentifier" )
+		local iosIdType = "iosAdvertisingIdentifier"
+		if GameAnalytics.iosIdentifierForVendor then iosIdType = "iosIdentifierForVendor" end
+		local userID = system.getInfo ( iosIdType )
 		return userID or createUserID()
 	else
 		return system.getInfo ( "deviceID" )
