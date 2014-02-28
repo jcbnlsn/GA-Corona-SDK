@@ -10,7 +10,7 @@
 -- Written by Jacob Nielsen for Game Analytics in 2013
 ----------------------------------------------------------------------------------
 
-local GameAnalytics, sdk_version = {}, "0.2.3"
+local GameAnalytics, sdk_version = {}, "0.2.4"
 
 -----------------------------------------------
 -- Default values for properties
@@ -538,6 +538,7 @@ local addSceneEventListeners, sceneEventHandler, sceneEvents
 sceneEventHandler = function ( e )
 
 	local sceneEvent 
+	--print ( e.name..": "..sceneInfo.currentSceneName ) 
 
 	if sceneInfo.isComposer then
 		if e.phase == "did" then
@@ -551,16 +552,18 @@ sceneEventHandler = function ( e )
 
 			elseif e.name == "hide" then
 
-				for i=1,#sceneEvents do sceneInfo.currentScene:removeEventListener( sceneEvents[i], sceneEventHandler ) end
-			
 				local timeSpentOnScene = os.time() - sceneInfo.enterSceneTime
-				local nextSceneName = manager.getSceneName( "current" )
-
 				sceneEvent = { event_id = "GA:Composer:Hide", area=sceneInfo.currentSceneName, value=timeSpentOnScene }
 
-				sceneInfo.currentSceneName = nextSceneName
-				sceneInfo.currentScene = manager.getScene( nextSceneName )
-				addSceneEventListeners ( sceneInfo.currentScene ) 
+				if sceneInfo.currentSceneName ~= manager.getSceneName( "current" ) then
+					for i=1,#sceneEvents do sceneInfo.currentScene:removeEventListener( sceneEvents[i], sceneEventHandler ) end
+				
+					local nextSceneName = manager.getSceneName( "current" )
+
+					sceneInfo.currentSceneName = nextSceneName
+					sceneInfo.currentScene = manager.getScene( nextSceneName )
+					addSceneEventListeners ( sceneInfo.currentScene ) 
+				end
 			end
 		end
 	else
@@ -574,21 +577,24 @@ sceneEventHandler = function ( e )
 
 		elseif e.name == "didExitScene" then
 
-			for i=1,#sceneEvents do sceneInfo.currentScene:removeEventListener( sceneEvents[i], sceneEventHandler ) end
-			
 			local timeSpentOnScene = os.time() - sceneInfo.enterSceneTime
-			local nextSceneName = manager.getCurrentSceneName()
-
 			sceneEvent = { event_id = "GA:Storyboard:ExitScene", area=sceneInfo.currentSceneName, value=timeSpentOnScene }
 
-			sceneInfo.currentSceneName = nextSceneName
-			sceneInfo.currentScene = manager.getScene( nextSceneName )
-			addSceneEventListeners ( sceneInfo.currentScene ) 
+			if sceneInfo.currentSceneName ~= manager.getCurrentSceneName() then
+
+				for i=1,#sceneEvents do sceneInfo.currentScene:removeEventListener( sceneEvents[i], sceneEventHandler ) end
+				
+				local nextSceneName = manager.getCurrentSceneName()
+				sceneInfo.currentSceneName = nextSceneName
+				sceneInfo.currentScene = manager.getScene( nextSceneName )
+				addSceneEventListeners ( sceneInfo.currentScene )
+			end
 		
 		elseif e.name == "overlayBegan" then
 
 			sceneInfo.enterOverlayTime = os.time()
 			sceneEvent = { event_id="GA:Storyboard:OverlayBegan", area=sceneInfo.currentSceneName..":"..e.sceneName }
+			
 		
 		elseif e.name == "overlayEnded" then
 
@@ -688,9 +694,10 @@ submitEvents = function ( category, ... )
 			storeEvent ( "unknown error, status="..tostring(event.status), category, message )
 		else
 			if GameAnalytics.isDebug then
-				if eventType ~= "archived" then
-					dbgMsg = "Submitting "..eventType.." event(s): "..dbgMsg.." - Server response: "..event.response
-					prt(dbgMsg)
+				if eventType ~= "archived" then 
+					dbgMsg = "Submitting "..eventType.." event(s): "..dbgMsg.." - Server response: "..event.response 
+					prt(dbgMsg) 
+					
 				end
 			end
 		end
