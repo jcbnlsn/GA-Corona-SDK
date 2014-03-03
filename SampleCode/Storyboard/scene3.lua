@@ -38,7 +38,6 @@ end
 -- Called BEFORE scene has moved onscreen:
 function scene:willEnterScene( event )
     local group = self.view
-
     tf2.text = "(tap to submit custom event)"
     tf2:setTextColor ( 220 )
 end
@@ -55,8 +54,9 @@ function scene:enterScene( event )
     	end
     end
 
+    local customEventHandler
     -- custom event
-    local function customEventHandler ( event )
+    customEventHandler = function( event )
     	if "ended" == event.phase then
 
             ---------------------------------------------------------------------------

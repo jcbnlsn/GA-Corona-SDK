@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------------
-GameAnalytics for Corona SDK v.0.2.3
+GameAnalytics for Corona SDK
 ---------------------------------------------------------------------------------
 
 Here you will find the GameAnalytics.lua module you need to copy to your project folder and require to use the GA SDK.
@@ -15,6 +15,9 @@ key and secret key you recieve in the initialization fields in the main.lua file
 ---------------------------------------------------------------------------------
 
 New in this version:
+
+v.0.2.4
++ storyboard.reloadScene bugfix
 
 v.0.2.3
 + Optional use of "iosIdentifierForVendor" instead of "iosAdvertisingIdentifier"
