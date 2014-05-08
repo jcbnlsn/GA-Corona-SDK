@@ -16,6 +16,9 @@ key and secret key you recieve in the initialization fields in the main.lua file
 
 New in this version:
 
+v.0.2.5
++ Archiving error handler. 
+
 v.0.2.4
 + storyboard.reloadScene bugfix
 
