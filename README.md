@@ -16,20 +16,10 @@ key and secret key you recieve in the initialization fields in the main.lua file
 
 New in this version:
 
-v.0.2.5
-+ Archiving error handler. 
-
-v.0.2.4
-+ storyboard.reloadScene bugfix
-
-v.0.2.3
-+ Optional use of "iosIdentifierForVendor" instead of "iosAdvertisingIdentifier"
-
-Note: If you are building for iOS and your app doesn't have ads in it, then you should 
-set the GameAnalytics.iosIdentifierForVendor property to true - or Apple might reject the app!
-
-v.0.2.2
-+ Composer support.
+v.0.2.5: Data saving error handler. Socket connection timeout corrected.
+v.0.2.4: storyboard.reloadScene bugfix
+v.0.2.3: Use of "iosIdentifierForVendor" instead of "iosAdvertisingIdentifier"
+v.0.2.2: Composer support.
 
 v.0.2.1
 + Batch requests.
@@ -42,7 +32,7 @@ v.0.2.1
 
 ---------------------------------------------------------------------------------
 
-Notes for Android developers:
+Note for Android developers:
 
 - Remember to set android permissions in your build settings:
 "android.permission.INTERNET"
