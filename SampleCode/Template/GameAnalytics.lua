@@ -230,7 +230,7 @@ local function saveData ( data, path )
 		fh:write( content )
 		io.close( fh )
 	else
-		prt ( "Unknown archiving error: event data will be lost" )
+		prt ( "Error writing data to disk." )
 	end
 end
 
