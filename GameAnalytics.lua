@@ -10,14 +10,11 @@
 -- Written by Jacob Nielsen for Game Analytics in 2013
 ----------------------------------------------------------------------------------
 
-local GameAnalytics, sdk_version = {}, "0.2.4"
+local GameAnalytics, sdk_version = {}, "0.2.5"
 
 -----------------------------------------------
 -- Default values for properties
 -----------------------------------------------
--- iOS id
-GameAnalytics.iosIdentifierForVendor = false
-
 --Settings
 GameAnalytics.isDebug = true
 GameAnalytics.runInSimulator = false
@@ -75,7 +72,7 @@ local initialized, disabled, isRoaming, hasConnection = false, false, false, tru
 local canDetectNetworkStatusChanges = false
 
 local gameAnalyticsData, dataDirectory
-local storedEventsCount, maxStoredEventsCount, errorCount = 0, 200, 0
+local storedEventsCount, maxStoredEventsCount, errorCount = 0, 100, 0
 local archiveEventsLimitReached, eventsArchived = false, false
 
 local minBatchRequestsInterval, minAverageFpsInterval, minCriticalFpsInterval, minCriticalFpsRange = 1, 5, 5, 10
@@ -149,7 +146,7 @@ end
 local function socketNetworkStatus ()
 	local socket = require("socket")
 	local ping = socket.tcp()
-	ping:settimeout(1000)
+	ping:settimeout(1)
 	local connection = ping:connect("www.gameanalytics.com", 80)
 	if connection == nil then hasConnection = false
 	else hasConnection = true end
@@ -213,7 +210,7 @@ local function submitUserEvent ( initial )
 		build=build,
 	}
 	
-	if platformName == "iPhone OS" and not GameAnalytics.iosIdentifierForVendor then userEvent["ios_id"]=system.getInfo( "iosAdvertisingIdentifier" )
+	if platformName == "iPhone OS" then userEvent["ios_id"]=system.getInfo( "iosAdvertisingIdentifier" )
 	elseif platformName == "Android" then userEvent["android_id"]=system.getInfo("deviceID") end
 
 	if initial then
@@ -228,9 +225,13 @@ end
 ----------------------------------------
 local function saveData ( data, path )
 	local fh = io.open( path, "w+" )
-	local content = json.encode( data )
-	fh:write( content )
-	io.close( fh )
+	if fh then
+		local content = json.encode( data )
+		fh:write( content )
+		io.close( fh )
+	else
+		prt ( "Error writing data to disk." )
+	end
 end
 
  local function loadData ( path )
@@ -271,9 +272,7 @@ end
 ----------------------------------------
 local function getUserID ()
 	if platformName == "iPhone OS" then
-		local iosIdType = "iosAdvertisingIdentifier"
-		if GameAnalytics.iosIdentifierForVendor then iosIdType = "iosIdentifierForVendor" end
-		local userID = system.getInfo ( iosIdType )
+		local userID = system.getInfo ( "iosIdentifierForVendor" )
 		return userID or createUserID()
 	else
 		return system.getInfo ( "deviceID" )
