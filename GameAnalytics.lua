@@ -230,7 +230,7 @@ local function saveData ( data, path )
 		fh:write( content )
 		io.close( fh )
 	else
-		prt ( "Error writing data to disk." )
+		prt ( "Error writing data to file." )
 	end
 end
 
