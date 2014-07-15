@@ -61,7 +61,7 @@ local apiVersion = 1
 local gameKey, secretKey, userId, build, sessionId, endpointUrl
 
 local customUserID
-local newEvent, submitEvents
+local newEvent, submitEvents, initArchiving
 
 local categories = { design=true, quality=true, user=true, business=true, error=true }
 
@@ -229,9 +229,10 @@ local function saveData ( data, path )
 		local content = json.encode( data )
 		fh:write( content )
 		io.close( fh )
+		return true
 	else
 		prt ( "Error writing data to file." )
-	end
+	return end
 end
 
  local function loadData ( path )
@@ -296,10 +297,12 @@ local function archiveEvents ()
 	if gameAnalyticsData then
 		local fileName = os.time()
 		local path = system.pathForFile( "/GameAnalyticsData/"..fileName..".txt", system.CachesDirectory )
-		saveData ( gameAnalyticsData, path )
+		if saveData ( gameAnalyticsData, path ) then prt ( fileName, "save" ) 
+		else 
+			if GameAnalytics.archiveEvents then initArchiving() end
+		end
 		gameAnalyticsData = nil
 		eventsArchived = true
-		prt ( fileName, "save" )
 	
 		if not archiveEventsLimitReached then
 			if lfs.attributes ( dataDirectory ) and (lfs.attributes ( dataDirectory ).size) > GameAnalytics.archiveEventsLimit*1000 then
@@ -398,7 +401,7 @@ end
 ----------------------------------------
 -- Setup archiving
 ----------------------------------------
- local function initArchiving ()
+initArchiving = function ()
 	if lfs.chdir( system.pathForFile( "", system.CachesDirectory ) ) then 
 		if not ( lfs.attributes( (lfs.currentdir().."/GameAnalyticsData"):gsub("\\$",""),"mode") == "directory" ) then
 			lfs.mkdir( "GameAnalyticsData" )
