@@ -13,18 +13,17 @@ function scene:createScene( event )
     local group = self.view
 
     background = display.newRect ( group, display.screenOriginX, display.screenOriginY, display.contentWidth-(2*display.screenOriginX), display.contentWidth-(2*display.screenOriginY) )
-	background:setFillColor (226,88,0)
+	background:setFillColor (226/255,88/255,0)
+	background.anchorX, background.anchorY = 0,0
 
 	local tf1 = display.newText("Storyboard: scene 2", 0, 0, native.systemFont, 20)
-    tf1:setReferencePoint(display.CenterReferencePoint)
 	tf1.x, tf1.y = display.contentWidth/2, (display.contentHeight/2)-12
-  	tf1:setTextColor ( 20 )
+  	tf1:setFillColor ( 20/255 )
     group:insert(tf1)
 
    	tf2 = display.newText("(tap to change scene)", 0, 0, native.systemFont, 15)
-    tf2:setReferencePoint(display.CenterReferencePoint)
 	tf2.x, tf2.y = display.contentWidth/2, (display.contentHeight/2)+10
-  	tf2:setTextColor ( 20 )
+  	tf2:setFillColor ( 20/255 )
     group:insert(tf2)
 end
 

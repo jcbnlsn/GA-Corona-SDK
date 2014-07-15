@@ -10,7 +10,7 @@
 -- Written by Jacob Nielsen for Game Analytics in 2013
 ----------------------------------------------------------------------------------
 
-local GameAnalytics, sdk_version = {}, "0.2.5"
+local GameAnalytics, sdk_version = {}, "0.2.6"
 
 -----------------------------------------------
 -- Default values for properties
@@ -302,7 +302,7 @@ local function archiveEvents ()
 		prt ( fileName, "save" )
 	
 		if not archiveEventsLimitReached then
-			if (lfs.attributes ( dataDirectory ).size) > GameAnalytics.archiveEventsLimit*1000 then
+			if lfs.attributes ( dataDirectory ) and (lfs.attributes ( dataDirectory ).size) > GameAnalytics.archiveEventsLimit*1000 then
 				archiveEventsLimitReached = true
 			end
 		end
@@ -340,23 +340,26 @@ local function submitArchivedEvents ()
 			if not GameAnalytics.submitWhileRoaming and isRoaming then 
 			else
 				local eventCount, sessionCount = 0, 0
-				for file in lfs.dir( dataDirectory ) do
-					local data = loadData ( system.pathForFile( "/GameAnalyticsData/"..file, system.CachesDirectory ) )
-					if data and data.categories then
-						sessionCount = sessionCount+1
-		
-						for k,v in pairs( data.categories ) do
-							for i=1,#data.categories[k] do
-								if not data.categories[k][i].session_id then
-									data.categories[k][i].session_id=data.session_id
-									data.categories[k][i].user_id=data.user_id
-									data.categories[k][i].build=data.build
+				local path = system.pathForFile( "/GameAnalyticsData/", system.CachesDirectory )
+				if lfs.chdir( path ) then
+					for file in lfs.dir( path ) do
+						local data = loadData ( system.pathForFile( "/GameAnalyticsData/"..file, system.CachesDirectory ) )
+						if data and data.categories then
+							sessionCount = sessionCount+1
+			
+							for k,v in pairs( data.categories ) do
+								for i=1,#data.categories[k] do
+									if not data.categories[k][i].session_id then
+										data.categories[k][i].session_id=data.session_id
+										data.categories[k][i].user_id=data.user_id
+										data.categories[k][i].build=data.build
+									end
 								end
+								eventCount = eventCount+1
+								newEvent ( k, unpack (data.categories[k]) )  
 							end
-							eventCount = eventCount+1
-							newEvent ( k, unpack (data.categories[k]) )  
+							os.remove ( dataDirectory.."/"..file ) 
 						end
-						os.remove ( dataDirectory.."/"..file ) 
 					end
 				end
 				if eventCount>0 then prt ( { eventCount, sessionCount }, "submittingArchivedEvents" ) end 
@@ -400,8 +403,8 @@ end
 		if not ( lfs.attributes( (lfs.currentdir().."/GameAnalyticsData"):gsub("\\$",""),"mode") == "directory" ) then
 			lfs.mkdir( "GameAnalyticsData" )
 		end
-		dataDirectory = lfs.currentdir().."/GameAnalyticsData"
 	end
+	dataDirectory = system.pathForFile( "/GameAnalyticsData", system.CachesDirectory )
 	submitArchivedEvents () 
 end
 
