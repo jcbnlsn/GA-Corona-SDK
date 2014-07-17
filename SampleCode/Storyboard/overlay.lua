@@ -13,21 +13,18 @@ function scene:createScene( event )
     local group = self.view
 
     window = display.newRoundedRect ( group, 0,0, display.contentWidth/1.5, display.contentHeight/1.5, 5 )
-    window:setReferencePoint(display.CenterReferencePoint)
     window.strokeWidth = 1
     window:setStrokeColor( 0 )
     window.x, window.y = display.contentWidth/2, display.contentHeight/2
 
     local tf1 = display.newText("Storyboard: overlay", 0, 0, native.systemFont, 20)
-    tf1:setReferencePoint(display.CenterReferencePoint)
     tf1.x, tf1.y = display.contentWidth/2, (display.contentHeight/2)-12
-    tf1:setTextColor ( 20 )
+    tf1:setTextColor ( 20/255 )
     group:insert(tf1)
 
     tf2 = display.newText("(tap to close)", 0, 0, native.systemFont, 15)
-    tf2:setReferencePoint(display.CenterReferencePoint)
     tf2.x, tf2.y = display.contentWidth/2, (display.contentHeight/2)+10
-    tf2:setTextColor ( 20 )
+    tf2:setTextColor ( 20/255 )
     group:insert(tf2)
 end
 

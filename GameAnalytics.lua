@@ -10,7 +10,7 @@
 -- Written by Jacob Nielsen for Game Analytics in 2013
 ----------------------------------------------------------------------------------
 
-local GameAnalytics, sdk_version = {}, "0.2.5"
+local GameAnalytics, sdk_version = {}, "0.2.6"
 
 -----------------------------------------------
 -- Default values for properties
@@ -61,7 +61,7 @@ local apiVersion = 1
 local gameKey, secretKey, userId, build, sessionId, endpointUrl
 
 local customUserID
-local newEvent, submitEvents
+local newEvent, submitEvents, initArchiving
 
 local categories = { design=true, quality=true, user=true, business=true, error=true }
 
@@ -229,9 +229,10 @@ local function saveData ( data, path )
 		local content = json.encode( data )
 		fh:write( content )
 		io.close( fh )
+		return true
 	else
 		prt ( "Error writing data to file." )
-	end
+	return end
 end
 
  local function loadData ( path )
@@ -296,13 +297,15 @@ local function archiveEvents ()
 	if gameAnalyticsData then
 		local fileName = os.time()
 		local path = system.pathForFile( "/GameAnalyticsData/"..fileName..".txt", system.CachesDirectory )
-		saveData ( gameAnalyticsData, path )
+		if saveData ( gameAnalyticsData, path ) then prt ( fileName, "save" ) 
+		else 
+			if GameAnalytics.archiveEvents then initArchiving() end
+		end
 		gameAnalyticsData = nil
 		eventsArchived = true
-		prt ( fileName, "save" )
 	
 		if not archiveEventsLimitReached then
-			if (lfs.attributes ( dataDirectory ).size) > GameAnalytics.archiveEventsLimit*1000 then
+			if lfs.attributes ( dataDirectory ) and (lfs.attributes ( dataDirectory ).size) > GameAnalytics.archiveEventsLimit*1000 then
 				archiveEventsLimitReached = true
 			end
 		end
@@ -340,23 +343,26 @@ local function submitArchivedEvents ()
 			if not GameAnalytics.submitWhileRoaming and isRoaming then 
 			else
 				local eventCount, sessionCount = 0, 0
-				for file in lfs.dir( dataDirectory ) do
-					local data = loadData ( system.pathForFile( "/GameAnalyticsData/"..file, system.CachesDirectory ) )
-					if data and data.categories then
-						sessionCount = sessionCount+1
-		
-						for k,v in pairs( data.categories ) do
-							for i=1,#data.categories[k] do
-								if not data.categories[k][i].session_id then
-									data.categories[k][i].session_id=data.session_id
-									data.categories[k][i].user_id=data.user_id
-									data.categories[k][i].build=data.build
+				local path = system.pathForFile( "/GameAnalyticsData/", system.CachesDirectory )
+				if lfs.chdir( path ) then
+					for file in lfs.dir( path ) do
+						local data = loadData ( system.pathForFile( "/GameAnalyticsData/"..file, system.CachesDirectory ) )
+						if data and data.categories then
+							sessionCount = sessionCount+1
+			
+							for k,v in pairs( data.categories ) do
+								for i=1,#data.categories[k] do
+									if not data.categories[k][i].session_id then
+										data.categories[k][i].session_id=data.session_id
+										data.categories[k][i].user_id=data.user_id
+										data.categories[k][i].build=data.build
+									end
 								end
+								eventCount = eventCount+1
+								newEvent ( k, unpack (data.categories[k]) )  
 							end
-							eventCount = eventCount+1
-							newEvent ( k, unpack (data.categories[k]) )  
+							os.remove ( dataDirectory.."/"..file ) 
 						end
-						os.remove ( dataDirectory.."/"..file ) 
 					end
 				end
 				if eventCount>0 then prt ( { eventCount, sessionCount }, "submittingArchivedEvents" ) end 
@@ -395,13 +401,13 @@ end
 ----------------------------------------
 -- Setup archiving
 ----------------------------------------
- local function initArchiving ()
+initArchiving = function ()
 	if lfs.chdir( system.pathForFile( "", system.CachesDirectory ) ) then 
 		if not ( lfs.attributes( (lfs.currentdir().."/GameAnalyticsData"):gsub("\\$",""),"mode") == "directory" ) then
 			lfs.mkdir( "GameAnalyticsData" )
 		end
-		dataDirectory = lfs.currentdir().."/GameAnalyticsData"
 	end
+	dataDirectory = system.pathForFile( "/GameAnalyticsData", system.CachesDirectory )
 	submitArchivedEvents () 
 end
 
