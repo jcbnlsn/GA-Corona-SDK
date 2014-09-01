@@ -16,14 +16,11 @@ key and secret key you recieve in the initialization fields in the main.lua file
 
 New in this version:
 
+v.0.2.7: Rejected events bug fix
 v.0.2.6: Data saving error handler. Socket connection timeout corrected.
-
 v.0.2.4: storyboard.reloadScene bugfix
-
 v.0.2.3: Use of "iosIdentifierForVendor" instead of "iosAdvertisingIdentifier"
-
 v.0.2.2: Composer support.
-
 v.0.2.1
 + Batch requests.
 + Built in reporting of average fps.
