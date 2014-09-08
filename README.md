@@ -14,7 +14,6 @@ key and secret key you recieve in the initialization fields in the main.lua file
 
 ---------------------------------------------------------------------------------
 
-<<<<<<< HEAD
 New in this version:
 
 v.0.2.5: Data saving error handler. Socket connection timeout corrected.
