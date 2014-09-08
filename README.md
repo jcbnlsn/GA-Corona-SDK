@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------------
-GameAnalytics for Corona SDK
+GameAnalytics for Corona SDK v.0.2.7
 ---------------------------------------------------------------------------------
 
 Here you will find the GameAnalytics.lua module you need to copy to your project folder and require to use the GA SDK.
@@ -14,6 +14,7 @@ key and secret key you recieve in the initialization fields in the main.lua file
 
 ---------------------------------------------------------------------------------
 
+<<<<<<< HEAD
 New in this version:
 
 v.0.2.5: Data saving error handler. Socket connection timeout corrected.
@@ -35,6 +36,8 @@ v.0.2.1
 
 ---------------------------------------------------------------------------------
 
+=======
+>>>>>>> 97e7e6b2bf0016b91ab3b6ffe3c4828786adfc26
 Note for Android developers:
 
 - Remember to set android permissions in your build settings:
