@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------------
-GameAnalytics for Corona SDK v.0.2.7
+GameAnalytics for Corona SDK v.0.2.8
 ---------------------------------------------------------------------------------
 
 Here you will find the GameAnalytics.lua module you need to copy to your project folder and require to use the GA SDK.
