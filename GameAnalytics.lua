@@ -10,7 +10,7 @@
 -- Written by Jacob Nielsen for Game Analytics in 2013
 ----------------------------------------------------------------------------------
 
-local GameAnalytics, sdk_version = {}, "0.2.7"
+local GameAnalytics, sdk_version = {}, "0.2.8"
 
 -----------------------------------------------
 -- Default values for properties
@@ -72,7 +72,7 @@ local initialized, disabled, isRoaming, hasConnection = false, false, false, tru
 local canDetectNetworkStatusChanges = false
 
 local gameAnalyticsData, dataDirectory
-local storedEventsCount, maxStoredEventsCount, errorCount = 0, 200, 0
+local storedEventsCount, maxStoredEventsCount, errorCount = 0, 100, 0
 local archiveEventsLimitReached, eventsArchived = false, false
 
 local minBatchRequestsInterval, minAverageFpsInterval, minCriticalFpsInterval, minCriticalFpsRange = 1, 5, 5, 10
