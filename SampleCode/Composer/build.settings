@@ -4,6 +4,15 @@ settings = {
 		default = "landscape",
 		supported = { "landscapeRight", "landscapeLeft" }
 	},
+
+	plugins =
+    {
+        ["plugin.advertisingId"] =
+        {
+            publisherId = "com.coronalabs"
+        },
+    },
+    
 	iphone =
 	{
 		plist=
