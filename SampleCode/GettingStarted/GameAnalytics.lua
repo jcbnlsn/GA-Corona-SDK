@@ -7,10 +7,10 @@
 -- For documentation see: http://support.gameanalytics.com/forums
 -- Sign up and get your keys here: http://www.gameanalytics.com
 --
--- Written by Jacob Nielsen for Game Analytics in 2013
+-- Written by Jacob Nielsen for Game Analytics in 2013-2015
 ----------------------------------------------------------------------------------
 
-local GameAnalytics, sdk_version = {}, "0.2.7"
+local GameAnalytics, sdk_version = {}, "0.2.9"
 
 -----------------------------------------------
 -- Default values for properties
@@ -53,6 +53,7 @@ GameAnalytics.criticalFpsBelow = display.fps/2
 -----------------------------------------------
 
 local json, crypto, lfs = require "json", require "crypto", require "lfs"
+local idfa pcall( function () idfa = require "plugin.advertisingId" end )
 local rand = math.random
 
 local apiUrl = "http://api.gameanalytics.com"
@@ -72,7 +73,7 @@ local initialized, disabled, isRoaming, hasConnection = false, false, false, tru
 local canDetectNetworkStatusChanges = false
 
 local gameAnalyticsData, dataDirectory
-local storedEventsCount, maxStoredEventsCount, errorCount = 0, 200, 0
+local storedEventsCount, maxStoredEventsCount, errorCount = 0, 100, 0
 local archiveEventsLimitReached, eventsArchived = false, false
 
 local minBatchRequestsInterval, minAverageFpsInterval, minCriticalFpsInterval, minCriticalFpsRange = 1, 5, 5, 10
@@ -97,20 +98,21 @@ local function initDebugPrint ()
 		prt("Session ID:    "..tostring(sessionId)) prt(dl) 
 	end
 
-	msg["wait"] = function () prt(l) prt("GameAnalytics initialization called. Game Analytics will") prt("initialize automatically when custom user id is set!") prt(l) end
+	msg["wait"] = function () prt(l) prt("GameAnalytics initialization called. GameAnalytics will") prt("initialize automatically when custom user id is set!") prt(l) end
 	msg["connection"] = function () prt(l) prt("Device has connection:    "..tostring (hasConnection).."\n") prt ("Device is roaming:        "..tostring(isRoaming)) prt(l) end
 	msg["save"] = function ( message ) prt(dl) prt("Saving stored events. File id: "..message..".txt") prt(dl) end
 	msg["disabled"] = function () prt(l) prt("GameAnalytics is disabled in the Corona simulator.") prt(l) end
-	msg["advertisingTrackingDisabled"] = function () prt(dl) prt("Advertising tracking is disabled on this device.") prt("No data will be sent to Game Analytics.") prt(dl) end
-	msg["roamingWarning"] = function () prt(l) prt ( "Warning! It is not possible to detect if this device is roaming." ) prt(l) end
+	msg["advertisingTrackingDisabled"] = function () prt(dl) prt("Advertising tracking is disabled on this device.") prt("No data will be sent to GameAnalytics.") prt(dl) end
+	msg["roamingWarning"] = function () prt(l) prt ( "WARNING! It is not possible to detect if this device is roaming." ) prt(l) end
 	msg["submittingArchivedEvents"] = function ( message ) prt(l) prt ( "Submitting "..message[1].." archived event batch(es) from "..message[2].." session(s)") prt(l) end
 	msg["submittingEventBatch"] = function ( message ) prt(l) prt ( "Submitting "..message.." batched requests.") prt(l) end
-	msg["storyboardWarning"] = function () prt(l) prt ( "Warning! You should also enable useStoryboard") prt ("if you wan't to enable submitStoryboardEvents.") prt(l) end
-	msg["composerWarning"] = function () prt(l) prt ( "Warning! You should also enable useComposer") prt ("if you wan't to enable submitComposerEvents.") prt(l) end
+	msg["storyboardWarning"] = function () prt(l) prt ( "WARNING! You should also enable useStoryboard") prt ("if you wan't to enable submitStoryboardEvents.") prt(l) end
+	msg["composerWarning"] = function () prt(l) prt ( "WARNING! You should also enable useComposer") prt ("if you wan't to enable submitComposerEvents.") prt(l) end
 	msg["maxErrorCount"] = function () if errorCount-1==GameAnalytics.maxErrorCount then prt(l) prt("ErrorCount="..(errorCount-1)..": Maximum error count reached.") 
 	prt ("No more errors will be submitted in this session!") prt(l) end end
 	msg["newSession"] = function () prt(l) prt ( "New session id generated for resume: "..sessionId) prt(l) end
 	msg["memoryWarningsNotSupported"] = function () prt(l) prt( "Notice! Memory warnings are only supported on iOS devices" ) prt(l) end
+	msg["idfaWarning"] = function () prt(l) prt( "WARNING! Add 'plugin.advertisingId' to the plugins table of the build.settings." ) prt(l) end
 
 	msg["event"] = function ( message )
 		
@@ -209,9 +211,14 @@ local function submitUserEvent ( initial )
 		sdk_version="corona "..sdk_version,
 		build=build,
 	}
-	
-	if platformName == "iPhone OS" then userEvent["ios_id"]=system.getInfo( "iosAdvertisingIdentifier" )
-	elseif platformName == "Android" then userEvent["android_id"]=system.getInfo("deviceID") end
+
+	if idfa then
+		if platformName == "iPhone OS" then 
+			userEvent["ios_id"]=idfa.getAdvertisingId()
+		elseif platformName == "Android" then 
+			userEvent["android_id"]=idfa.getAdvertisingId()
+		end
+	end
 
 	if initial then
 		if not isSimulator then newEvent ( "user", userEvent ) end
@@ -272,6 +279,7 @@ end
 -- User id
 ----------------------------------------
 local function getUserID ()
+
 	if platformName == "iPhone OS" then
 		local userID = system.getInfo ( "iosIdentifierForVendor" )
 		return userID or createUserID()
@@ -753,11 +761,13 @@ function GameAnalytics.init ( params )
 			GameAnalytics.runInSimulator = false
 		end
 	end
+
+	if not idfa then prt(nil, "idfaWarning") end
 	
 	if isSimulator and not GameAnalytics.runInSimulator then
 		prt ( nil, "disabled" )
 		disabled = true
-	elseif platformName=="iPhone OS" and system.getInfo("iosAdvertisingTrackingEnabled")==false then
+	elseif idfa and not idfa.isTrackingEnabled() then
 		prt ( nil, "advertisingTrackingDisabled" )
 		disabled = true
 	else
