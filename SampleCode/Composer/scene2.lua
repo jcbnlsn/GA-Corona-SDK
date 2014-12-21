@@ -75,7 +75,7 @@ function scene:show( event )
 	    		GA.newEvent ( "design", { event_id="some_custom_event"} )
 
 	    		-- Change touch to change scene handler 
-	            background:removeEventListener ( "touch", customEventHandler )
+	           background:removeEventListener ( "touch", customEventHandler )
 	        	timer.performWithDelay( 500, function ()
 	        	   background:addEventListener( "touch", changeSceneHandler )
 	    	       tf2.text = "(tap to change scene)"

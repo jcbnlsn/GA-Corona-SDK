@@ -12,21 +12,14 @@ settings = {
             publisherId = "com.coronalabs"
         },
     },
-    
-	iphone =
-	{
-		plist=
-		{
-			UIStatusBarHidden=true,
-		},
-	},
 
 	android =
     {
         versionCode = "1",
         usesPermissions =
         {
-            "android.permission.INTERNET"
+            "android.permission.INTERNET",
+            "android.permission.ACCESS_NETWORK_STATE"
         },
     },
 }
