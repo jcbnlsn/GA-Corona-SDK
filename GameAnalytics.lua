@@ -10,7 +10,7 @@
 -- Written by Jacob Nielsen for Game Analytics in 2013-2015
 ----------------------------------------------------------------------------------
 
-local GameAnalytics, sdk_version = {}, "0.2.9"
+local GameAnalytics, sdk_version = {}, "0.2.9" -- 2
 
 -----------------------------------------------
 -- Default values for properties
@@ -193,8 +193,9 @@ local function submitSystemInfo ()
 			systemInfo[index] = systemProperty
 			index=index+1
 		end
-	end	
+	end
 
+	if system.getInfo("platformName") == "Android" then systemInfo[1].message = "Android" end
 	newEvent ( "systemInfo", unpack (systemInfo) )
 end
 
