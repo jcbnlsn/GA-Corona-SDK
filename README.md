@@ -14,6 +14,10 @@ key and secret key you recieve in the initialization fields in the main.lua file
 
 ---------------------------------------------------------------------------------
 
+- PLEASE NOTICE
+Starting with version 0.2.9 you need to add the advertisingId to the plugins table of your build.settings:
+
+
 Note for Android developers:
 
 - Remember to set android permissions in your build settings:
