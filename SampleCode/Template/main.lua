@@ -19,17 +19,16 @@ GA.waitForCustomUserID       = false
 GA.newSessionOnResume        = false
 
 GA.archiveEvents             = true
-GA.archiveEventsLimit        = 512         -- kilobytes 
+GA.archiveEventsLimit        = 512      -- kilobytes 
 
 GA.batchRequests             = false
-GA.batchRequestsInterval     = 30          -- seconds (minimum 1 second)
+GA.batchRequestsInterval     = 30       -- seconds (minimum 1 second)
 
 -- Built in quality events
 GA.submitSystemInfo          = false
 
 -- Built in error events
 GA.submitUnhandledErrors     = false
-
 GA.submitMemoryWarnings      = false    -- iOS only!
 GA.maxErrorCount             = 20       -- errors per session
 
@@ -41,12 +40,13 @@ GA.useComposer				= false
 GA.submitComposerEvents		= false
 
 GA.submitAverageFps          = false
-GA.submitAverageFpsInterval  = 30          -- seconds (minimum 5)
+GA.submitAverageFpsInterval  = 30       -- seconds (minimum 5)
 
 GA.submitCriticalFps         = false
-GA.submitCriticalFpsInterval = 5           -- seconds (minimum 5)
-GA.criticalFpsRange          = 15          -- frames  (minimum 10)
-GA.criticalFpsBelow          = display.fps/2 -- half the fps you set in the config.lua file
+GA.submitCriticalFpsInterval = 5        -- seconds (minimum 5)
+GA.criticalFpsRange          = 15       -- frames  (minimum 10)
+
+GA.criticalFpsBelow          = display.fps/2 -- half the fps value you set in the config.lua file
 
 ---------------------------------------------------------------------------------
 -- Initialize Game Analytics.
